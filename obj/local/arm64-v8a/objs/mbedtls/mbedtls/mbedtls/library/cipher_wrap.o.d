@@ -1,0 +1,99 @@
+./obj/local/arm64-v8a/objs/mbedtls/mbedtls/mbedtls/library/cipher_wrap.o: \
+  jni/mbedtls/mbedtls/library/cipher_wrap.c \
+  jni/mbedtls/mbedtls/library/common.h \
+  jni/mbedtls/mbedtls/mbedtls/build_info.h \
+  jni/mbedtls/mbedtls/mbedtls/mbedtls_config.h \
+  jni/mbedtls/mbedtls/mbedtls/config_psa.h \
+  jni/mbedtls/mbedtls/psa/crypto_legacy.h \
+  jni/mbedtls/mbedtls/psa/crypto_adjust_config_synonyms.h \
+  jni/mbedtls/mbedtls/psa/crypto_adjust_config_dependencies.h \
+  jni/mbedtls/mbedtls/mbedtls/config_adjust_psa_superset_legacy.h \
+  jni/mbedtls/mbedtls/mbedtls/config_adjust_psa_from_legacy.h \
+  jni/mbedtls/mbedtls/psa/crypto_adjust_config_key_pair_types.h \
+  jni/mbedtls/mbedtls/psa/crypto_adjust_auto_enabled.h \
+  jni/mbedtls/mbedtls/mbedtls/config_adjust_legacy_crypto.h \
+  jni/mbedtls/mbedtls/mbedtls/config_adjust_x509.h \
+  jni/mbedtls/mbedtls/mbedtls/config_adjust_ssl.h \
+  jni/mbedtls/mbedtls/mbedtls/check_config.h \
+  jni/mbedtls/mbedtls/library/alignment.h \
+  jni/mbedtls/mbedtls/library/cipher_wrap.h \
+  jni/mbedtls/mbedtls/mbedtls/cipher.h \
+  jni/mbedtls/mbedtls/mbedtls/private_access.h \
+  jni/mbedtls/mbedtls/mbedtls/platform_util.h \
+  jni/mbedtls/mbedtls/mbedtls/platform_time.h \
+  jni/mbedtls/mbedtls/mbedtls/error.h \
+  jni/mbedtls/mbedtls/mbedtls/chachapoly.h \
+  jni/mbedtls/mbedtls/mbedtls/poly1305.h \
+  jni/mbedtls/mbedtls/mbedtls/chacha20.h \
+  jni/mbedtls/mbedtls/mbedtls/aes.h \
+  jni/mbedtls/mbedtls/mbedtls/camellia.h \
+  jni/mbedtls/mbedtls/mbedtls/aria.h jni/mbedtls/mbedtls/mbedtls/des.h \
+  jni/mbedtls/mbedtls/mbedtls/gcm.h jni/mbedtls/mbedtls/mbedtls/ccm.h \
+  jni/mbedtls/mbedtls/mbedtls/nist_kw.h \
+  jni/mbedtls/mbedtls/mbedtls/platform.h
+
+jni/mbedtls/mbedtls/library/common.h:
+
+jni/mbedtls/mbedtls/mbedtls/build_info.h:
+
+jni/mbedtls/mbedtls/mbedtls/mbedtls_config.h:
+
+jni/mbedtls/mbedtls/mbedtls/config_psa.h:
+
+jni/mbedtls/mbedtls/psa/crypto_legacy.h:
+
+jni/mbedtls/mbedtls/psa/crypto_adjust_config_synonyms.h:
+
+jni/mbedtls/mbedtls/psa/crypto_adjust_config_dependencies.h:
+
+jni/mbedtls/mbedtls/mbedtls/config_adjust_psa_superset_legacy.h:
+
+jni/mbedtls/mbedtls/mbedtls/config_adjust_psa_from_legacy.h:
+
+jni/mbedtls/mbedtls/psa/crypto_adjust_config_key_pair_types.h:
+
+jni/mbedtls/mbedtls/psa/crypto_adjust_auto_enabled.h:
+
+jni/mbedtls/mbedtls/mbedtls/config_adjust_legacy_crypto.h:
+
+jni/mbedtls/mbedtls/mbedtls/config_adjust_x509.h:
+
+jni/mbedtls/mbedtls/mbedtls/config_adjust_ssl.h:
+
+jni/mbedtls/mbedtls/mbedtls/check_config.h:
+
+jni/mbedtls/mbedtls/library/alignment.h:
+
+jni/mbedtls/mbedtls/library/cipher_wrap.h:
+
+jni/mbedtls/mbedtls/mbedtls/cipher.h:
+
+jni/mbedtls/mbedtls/mbedtls/private_access.h:
+
+jni/mbedtls/mbedtls/mbedtls/platform_util.h:
+
+jni/mbedtls/mbedtls/mbedtls/platform_time.h:
+
+jni/mbedtls/mbedtls/mbedtls/error.h:
+
+jni/mbedtls/mbedtls/mbedtls/chachapoly.h:
+
+jni/mbedtls/mbedtls/mbedtls/poly1305.h:
+
+jni/mbedtls/mbedtls/mbedtls/chacha20.h:
+
+jni/mbedtls/mbedtls/mbedtls/aes.h:
+
+jni/mbedtls/mbedtls/mbedtls/camellia.h:
+
+jni/mbedtls/mbedtls/mbedtls/aria.h:
+
+jni/mbedtls/mbedtls/mbedtls/des.h:
+
+jni/mbedtls/mbedtls/mbedtls/gcm.h:
+
+jni/mbedtls/mbedtls/mbedtls/ccm.h:
+
+jni/mbedtls/mbedtls/mbedtls/nist_kw.h:
+
+jni/mbedtls/mbedtls/mbedtls/platform.h:
