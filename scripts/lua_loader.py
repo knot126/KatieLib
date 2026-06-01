@@ -40,13 +40,13 @@ def process(path):
 #include "lauxlib.h"
 #include "lualib.h"
 
-void *KNGetSymbolAddr(const char *name);
+void *YipLookupSymbol(const char *name);
 
 void KNLoadLua(void) {{
 """)
 		
 		for name in funcnames:
-			f.write(f"\t{name} = KNGetSymbolAddr(\"{name}\");\n")
+			f.write(f"\t{name} = YipLookupSymbol(\"{name}\");\n")
 		
 		f.write("}\n")
 
