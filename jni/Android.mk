@@ -34,6 +34,7 @@ LOCAL_SRC_FILES := KatieMod/mod_info.c \
 	KatieMod/builtin/input.c \
 	KatieMod/builtin/draw.c \
 	KatieMod/builtin/pack.c \
+	KatieMod/builtin/isc.c \
 	KatieMod/lua/loader.c \
 	KatieMod/extern/miniz.c
 

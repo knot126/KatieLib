@@ -58,4 +58,44 @@ static inline void knLuaPushVec2(lua_State *L, QiVec2 v) {
 	lua_pushinteger(L, 2); lua_pushnumber(L, v.y); lua_settable(L, -3);
 }
 
+static inline void knLuaCopyIndex(lua_State *L, int l, lua_State *M) {
+	const int type = lua_type(L, l);
+	
+	lua_checkstack(M, 1);
+	
+	switch (type) {
+		case LUA_TNIL:
+		case LUA_TFUNCTION:
+		case LUA_TUSERDATA:
+		case LUA_TTHREAD:
+			lua_pushnil(M);
+			break;
+		case LUA_TNUMBER:
+			lua_pushnumber(M, lua_tonumber(L, l));
+			break;
+		case LUA_TBOOLEAN:
+			lua_pushboolean(M, lua_toboolean(L, l));
+			break;
+		case LUA_TSTRING: {
+			size_t size;
+			const char *data = lua_tolstring(L, l, &size);
+			lua_pushlstring(M, data, size);
+			break;
+		}
+		case LUA_TTABLE:
+			lua_newtable(M);
+			lua_pushnil(L);
+			while (lua_next(L, l)) {
+				knLuaCopyIndex(L, -2, M); // key
+				knLuaCopyIndex(L, -1, M); // value
+				lua_settable(M, -3);
+				lua_pop(L, 1);
+			}
+			break;
+		case LUA_TLIGHTUSERDATA:
+			lua_pushlightuserdata(M, lua_touserdata(L, l));
+			break;
+	}
+}
+
 #endif // _LUA_UTILS_H_

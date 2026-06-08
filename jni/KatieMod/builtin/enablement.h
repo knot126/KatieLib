@@ -12,6 +12,7 @@ enum {
 	KN_INPUT_BIT = (1 << 10),
 	KN_DRAW_BIT = (1 << 11),
 	KN_PACK_BIT = (1 << 12),
+	KN_ISC_BIT = (1 << 13),
 };
 
 #define KNSHIM_ENABLE() \
@@ -41,6 +42,8 @@ enum {
 	if ((gDisabledModules & KN_DRAW_BIT) == 0) { knEnableDraw(script); }\
 	int knEnablePack(lua_State *script);\
 	if ((gDisabledModules & KN_PACK_BIT) == 0) { knEnablePack(script); }\
+	int knEnableIsc(lua_State *script);\
+	if ((gDisabledModules & KN_ISC_BIT) == 0) { knEnableIsc(script); }\
 
 
 #define KNSHIM_PUSH_ENABLE_ENUM() \
@@ -57,3 +60,4 @@ enum {
 	knLuaPushEnum(script, KN_INPUT_BIT);\
 	knLuaPushEnum(script, KN_DRAW_BIT);\
 	knLuaPushEnum(script, KN_PACK_BIT);\
+	knLuaPushEnum(script, KN_ISC_BIT);\

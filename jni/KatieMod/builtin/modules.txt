@@ -11,3 +11,4 @@ Shaders smashhit grannysmith
 Input smashhit
 Draw smashhit
 Pack smashhit grannysmith
+Isc smashhit
