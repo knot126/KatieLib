@@ -80,6 +80,7 @@ bool KNGetAppVersion(char *buffer, size_t maxSize);
 
 #define knRegisterFunc(SCRIPT, NAME) lua_register(SCRIPT, #NAME, NAME)
 #define knLuaPushEnum(SCRIPT, ENUM_NAME) lua_pushinteger(SCRIPT, ENUM_NAME); lua_setglobal(SCRIPT, #ENUM_NAME);
+#define knLuaGlobalStr(SCRIPT, STRING_VAR) lua_pushstring(SCRIPT, STRING_VAR); lua_setglobal(SCRIPT, #STRING_VAR);
 #define knReturnNil(SCRIPT) lua_pushnil(SCRIPT); return 1;
 #define KNLoadFunc(RET, NAME, SIG) RET (*NAME) SIG = YipLookupSymbol(#NAME);
 

@@ -6,14 +6,11 @@ from datetime import datetime
 from pathlib import Path
 
 if "--help" in sys.argv:
-	print(f"""{sys.argv[0]} [OPTIONS] -- build KnShim
+	print(f"""{sys.argv[0]} [OPTIONS] -- build KatieMod
 
 Options:
-    --game <game id>    Build KnShim for a certian game. Available games are
-                        "smashhit" and "grannysmith".
     --no-regen-header   Do not regenerate headers
     --package <version> Package the shim with the version number <version>.
-    --no-tls            Disable HTTPS support and don't build MbedTLS
     --upgrade           Automatically upgrade apk open in apk editor studio
 """)
 	sys.exit()
@@ -24,9 +21,9 @@ if "--no-regen-header" not in sys.argv:
 	if "--package" in sys.argv:
 		version = sys.argv[sys.argv.index("--package")+1]
 		new_data = f"#define SHIM_VERSION \"{version}\"\n"
-		Path("jni/shim/version.h").write_text(new_data)
+		Path("jni/KatieMod/version.h").write_text(new_data)
 	
-	with open("jni/shim/builtin/modules.txt", "r") as f:
+	with open("jni/KatieMod/builtin/modules.txt", "r") as f:
 		enum = ""
 		enables = ""
 		pushenum = ""
@@ -42,7 +39,7 @@ if "--no-regen-header" not in sys.argv:
 				pushenum += f"\tknLuaPushEnum(script, KN_{name.upper()}_BIT);\\\n"
 				i += 1
 		
-		Path("jni/shim/builtin/enablement.h").write_text(f"""enum {{
+		Path("jni/KatieMod/builtin/enablement.h").write_text(f"""enum {{
 {enum}}};
 
 #define KNSHIM_ENABLE() \\
@@ -51,28 +48,15 @@ if "--no-regen-header" not in sys.argv:
 #define KNSHIM_PUSH_ENABLE_ENUM() \\
 {pushenum}""")
 
-# Kill me
-granny_define = "LOCAL_CFLAGS += -DGRANNY"
-
-if game == "grannysmith":
-	mk = Path("jni/Android.mk").read_text()
-	
-	if f"# {granny_define}" in mk:
-		Path("jni/Android.mk").write_text(mk.replace(f"# {granny_define}", granny_define))
-else:
-	mk = Path("jni/Android.mk").read_text()
-	
-	if f"# {granny_define}" not in mk:
-		Path("jni/Android.mk").write_text(mk.replace(granny_define, f"# {granny_define}"))
-
-ndk_build_args = ""
-
-if "--no-tls" in sys.argv:
-	ndk_build_args += " DISABLE_TLS=true"
-
-status = os.system(f"ndk-build{ndk_build_args}")
+status = os.system(f"ndk-build")
 
 if not status:
+	for arch in {"armeabi-v7a", "arm64-v8a"}:
+		try:
+			os.remove(f"libs/{arch}/libYipLoader.so")
+		except:
+			pass
+	
 	if "--upgrade" in sys.argv:
 		apks = os.listdir("/tmp/apk-editor-studio/apk")
 		
