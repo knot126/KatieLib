@@ -96,7 +96,7 @@ static void UIGenerateNineSliceVerts(UIVertex verts[16], float sx, float sy, flo
 	verts[15] = (UIVertex) {sx, 0.0, z, 1.0, 0.0, r, g, b, a};
 }
 
-int knGetViewport(lua_State *L) {
+int knGetViewportDim(lua_State *L) {
 	GLint result[4];
 	glGetIntegerv(GL_VIEWPORT, result);
 	lua_pushinteger(L, result[0]);
@@ -109,6 +109,7 @@ int knGetViewport(lua_State *L) {
 int knEnableDraw(lua_State *L) {
 	knRegisterFunc(L, knDrawLine);
 	knRegisterFunc(L, knDrawRectangle);
+	knRegisterFunc(L, knGetViewportDim);
 	
 	Gfx_drawLine = YipLookupSymbol("_ZN3Gfx8drawLineERK6QiVec3S2_RK7QiColorf");
 	Gfx_drawRectangle = YipLookupSymbol("_ZN3Gfx13drawRectangleERK6QiVec2S2_RK7QiColor");

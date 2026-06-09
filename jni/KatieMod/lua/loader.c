@@ -11,6 +11,7 @@ void KNLoadLua(void) {
 	lua_getinfo = YipLookupSymbol("lua_getinfo");
 	lua_rawequal = YipLookupSymbol("lua_rawequal");
 	luaL_loadfile = YipLookupSymbol("luaL_loadfile");
+	luaL_loadbuffer = YipLookupSymbol("luaL_loadbuffer");
 	luaL_unref = YipLookupSymbol("luaL_unref");
 	lua_status = YipLookupSymbol("lua_status");
 	lua_checkstack = YipLookupSymbol("lua_checkstack");
