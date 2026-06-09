@@ -10,16 +10,16 @@ if "--help" in sys.argv:
 
 Options:
     --no-regen-header   Do not regenerate headers
-    --package <version> Package the shim with the version number <version>.
+    --package           Package the final libs into a zip.
     --upgrade           Automatically upgrade apk open in apk editor studio
 """)
 	sys.exit()
 
-game = "smashhit" if "--game" not in sys.argv else sys.argv[sys.argv.index("--game")+1]
+game = "smashhit" #if "--game" not in sys.argv else sys.argv[sys.argv.index("--game")+1]
 
 if "--no-regen-header" not in sys.argv:
 	if "--package" in sys.argv:
-		version = sys.argv[sys.argv.index("--package")+1]
+		version = Path("RELEASE").read_text().strip()
 		new_data = f"#define SHIM_VERSION \"{version}\"\n"
 		Path("jni/KatieMod/version.h").write_text(new_data)
 	
@@ -68,5 +68,6 @@ if not status:
 			print(f"No APKs to upgrade")
 	
 	if "--package" in sys.argv:
-		version = sys.argv[sys.argv.index("--package")+1]
-		shutil.make_archive(f"knshim-r{version}-{game}-libs", "zip", "./libs")
+		version = Path("RELEASE").read_text().strip()
+		print(f"Package release as version {version}...")
+		shutil.make_archive(f"katiemod-r{version}-{game}-libs", "zip", "./libs")

@@ -11,8 +11,7 @@ int knPatch(lua_State *script) {
 	 */
 	
 	if (lua_gettop(script) < 2) {
-		lua_pushboolean(script, 0);
-		return 1;
+		return luaL_error(script, "Not enough args");
 	}
 	
 	size_t vaddr = lua_tointeger(script, 1);

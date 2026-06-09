@@ -6,10 +6,17 @@
 
 // LOG
 int knLog(lua_State *script) {
+	/**
+	 * knLog((string) message)
+	 * knLog((enum) level, (string) message)
+	 * 
+	 * Log a message to the android debug log
+	 */
+	
 	int args = lua_gettop(script);
 	
 	if (args < 1 || args > 2) {
-		return 0;
+		return luaL_error(script, "Invalid number of arguments");
 	}
 	
 	const char *msg = lua_tostring(script, args);

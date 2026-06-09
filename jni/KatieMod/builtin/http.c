@@ -169,8 +169,7 @@ int knHttpUpdate(lua_State *script) {
 	 */
 	
 	if (lua_gettop(script) < 1) {
-		lua_pushnil(script);
-		return 1;
+		return luaL_error(script, "Not enough args");
 	}
 	
 	knHttpContext *ctx = lua_touserdata(script, 1);
@@ -206,8 +205,7 @@ int knHttpData(lua_State *script) {
 	 */
 	
 	if (lua_gettop(script) < 1) {
-		lua_pushnil(script);
-		return 1;
+		return luaL_error(script, "Not enough args");
 	}
 	
 	knHttpContext *ctx = lua_touserdata(script, 1);
@@ -235,8 +233,7 @@ int knHttpSave(lua_State *script) {
 	 */
 	
 	if (lua_gettop(script) < 2) {
-		luaL_error(script, "Not enough arguments to knHttpSave");
-		return 0;
+		return luaL_error(script, "Not enough arguments to knHttpSave");
 	}
 	
 	knHttpContext *ctx = lua_touserdata(script, 1);
@@ -279,8 +276,7 @@ int knHttpDataSize(lua_State *script) {
 	 */
 	
 	if (lua_gettop(script) < 1) {
-		lua_pushnil(script);
-		return 1;
+		return luaL_error(script, "Not enough args");
 	}
 	
 	knHttpContext *ctx = lua_touserdata(script, 1);
@@ -303,8 +299,7 @@ int knHttpGetHeader(lua_State *script) {
 	 */
 	
 	if (lua_gettop(script) < 1) {
-		lua_pushnil(script);
-		return 1;
+		return luaL_error(script, "Not enough args");
 	}
 	
 	knHttpContext *ctx = lua_touserdata(script, 1);
@@ -343,8 +338,7 @@ int knHttpError(lua_State *script) {
 	 */
 	
 	if (lua_gettop(script) < 1) {
-		lua_pushnil(script);
-		return 1;
+		return luaL_error(script, "Not enough args");
 	}
 	
 	knHttpContext *ctx = lua_touserdata(script, 1);
@@ -372,8 +366,7 @@ int knHttpErrorCode(lua_State *script) {
 	 */
 	
 	if (lua_gettop(script) < 1) {
-		lua_pushnil(script);
-		return 1;
+		return luaL_error(script, "Not enough args");
 	}
 	
 	knHttpContext *ctx = lua_touserdata(script, 1);
@@ -394,7 +387,7 @@ int knHttpRelease(lua_State *script) {
 	 */
 	
 	if (lua_gettop(script) < 1) {
-		return 0;
+		return luaL_error(script, "Not enough args");
 	}
 	
 	knHttpContext *ctx = lua_touserdata(script, 1);
@@ -503,6 +496,9 @@ int knHttpsNoCert(lua_State *L) {
 	
 	if (magic && !strcmp(magic, "The foxes whispher in your ear: \"Here lies dangerous code!\"")) {
 		gHttps.allow_without_cert = true;
+	}
+	else {
+		return luaL_error(script, "Say the magic words!");
 	}
 	
 	return 0;
