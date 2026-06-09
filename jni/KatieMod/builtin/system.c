@@ -68,17 +68,18 @@ int knInclude(lua_State *script) {
 	 * Include a lua script from the APK assets directory.
 	 */
 	
-	const char *path = lua_tostring(script, 1);
+	const char * const path = lua_tostring(script, 1);
 	char *data = NULL;
+	size_t size = 0;
 	
 	if (!path) {
 		return luaL_error(script, "path is null or not a string");
 	}
 	
-	bool success = KNLoadAsset(path, (void**)&data, NULL);
+	bool success = KNLoadAsset(path, (void**)&data, &size);
 	
 	if (success) {
-		int lerror = (luaL_loadstring(script, data) || lua_pcall(script, 0, LUA_MULTRET, 0));
+		int lerror = (luaL_loadbuffer(script, data, size, path) || lua_pcall(script, 0, LUA_MULTRET, 0));
 		
 		free(data);
 		
