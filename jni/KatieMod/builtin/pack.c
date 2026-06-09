@@ -1,36 +1,31 @@
 #include "lua_utils.h"
 #include "../util.h"
 
+#define PACK_TYPE(STRNAME, TYPE) else if (!strcmp(typename, STRNAME)) { \
+		TYPE n = lua_tonumber(script, 2); \
+		lua_pushlstring(script, (const char *) &n, sizeof n); \
+	}
+
 int knPack(lua_State *script) {
+	/**
+	 * (string) data = knPack((string) type, (number|integer) value)
+	 * 
+	 * Convert a integer or floating point value to bytes in native endian form
+	 */
+	
 	int atype = lua_type(script, 1);
 	
 	if (atype == LUA_TSTRING) {
 		const char *typename = lua_tostring(script, 1);
 		
-		if (!strcmp(typename, "float")) {
-			float n = lua_tonumber(script, 2);
-			lua_pushlstring(script, (const char *) &n, sizeof n);
-		}
-		else if (!strcmp(typename, "double")) {
-			double n = lua_tonumber(script, 2);
-			lua_pushlstring(script, (const char *) &n, sizeof n);
-		}
-		else if (!strcmp(typename, "char") || !strcmp(typename, "bool")) {
-			unsigned char n = lua_tointeger(script, 2);
-			lua_pushlstring(script, (const char *) &n, sizeof n);
-		}
-		else if (!strcmp(typename, "short")) {
-			short n = lua_tointeger(script, 2);
-			lua_pushlstring(script, (const char *) &n, sizeof n);
-		}
-		else if (!strcmp(typename, "int")) {
-			int n = lua_tointeger(script, 2);
-			lua_pushlstring(script, (const char *) &n, sizeof n);
-		}
-		else if (!strcmp(typename, "long")) {
-			int64_t n = lua_tointeger(script, 2);
-			lua_pushlstring(script, (const char *) &n, sizeof n);
-		}
+		if (false) {}
+		PACK_TYPE("float", float)
+		PACK_TYPE("double", double)
+		PACK_TYPE("char", int8_t)
+		PACK_TYPE("bool", int8_t)
+		PACK_TYPE("short", int16_t)
+		PACK_TYPE("int", int32_t)
+		PACK_TYPE("long", int64_t)
 		else {
 			luaL_error(script, "Invalid pack type string: '%s'", typename);
 		}
@@ -45,8 +40,62 @@ int knPack(lua_State *script) {
 	return 1;
 }
 
+#define UNPACK_TYPE(NAME, TYPE, TYPECLASS) if (!strcmp(target_type, NAME)) { \
+		if (in_size == sizeof(TYPE)) { \
+			lua_push ## TYPECLASS(script, ( *(TYPE *)in_data )); \
+		} \
+		else { \
+			return luaL_error(script, "Cannot convert %d byte buffer to %d byte " NAME, in_size, sizeof(TYPE)); \
+		} \
+	}
+
+int knUnpack(lua_State *script) {
+	/**
+	 * (integer|number) value = knUnpack((string) type, (string) data)
+	 */
+	
+	const char * const target_type = lua_tostring(script, 1);
+	size_t in_size;
+	const char * const in_data = lua_tolstring(script, 2, &in_size);
+	
+	if (!target_type) {
+		return luaL_error(script, "Target type not provided");
+	}
+	
+	if (!in_data) {
+		return luaL_error(script, "Input data not provided");
+	}
+	
+	if (false) {}
+	UNPACK_TYPE("float", float, number)
+	UNPACK_TYPE("double", double, number)
+	UNPACK_TYPE("char", int8_t, integer)
+	UNPACK_TYPE("bool", int8_t, integer)
+	UNPACK_TYPE("short", int16_t, integer)
+	UNPACK_TYPE("int", int32_t, integer)
+	UNPACK_TYPE("long", int64_t, integer)
+	else {
+		luaL_error(script, "'%s' is not a supported unpack data type", target_type);
+	}
+	
+	return 1;
+}
+
+int knIsLittleEndian(lua_State *script) {
+	/**
+	 * (boolean) platformIsLittleEndian = knIsLittleEndian()
+	 */
+	
+	union { int8_t a; int16_t b; } u;
+	u.b = 1;
+	lua_pushboolean(script, u.a);
+	return 1;
+}
+
 int knEnablePack(lua_State *script) {
 	knRegisterFunc(script, knPack);
+	knRegisterFunc(script, knUnpack);
+	// knRegisterFunc(script, knIsLittleEndian);
 	
 	return 0;
 }

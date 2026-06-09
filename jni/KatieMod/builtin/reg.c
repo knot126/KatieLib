@@ -97,7 +97,7 @@ int knRegDelete(lua_State *script) {
 
 int knRegKeys(lua_State *script) {
 	if (lua_gettop(script) != 0) {
-		return luaL_error("Too many arguments!");
+		return luaL_error(script, "Too many arguments!");
 	}
 	
 	lua_createtable(script, 0, 0);
@@ -364,7 +364,7 @@ int knDbKeys(lua_State *script) {
 	 */
 	
 	if (lua_gettop(script) != 0) {
-		return luaL_error("Too many arguments!");
+		return luaL_error(script, "Too many arguments!");
 	}
 	
 	lua_createtable(script, 0, 0);
