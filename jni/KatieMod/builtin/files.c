@@ -16,7 +16,7 @@ int knWriteFile(lua_State *script) {
 	 */
 	
 	if (lua_gettop(script) < 2) {
-		return 0;
+		return luaL_error(script, "Not enough args");
 	}
 	
 	const char *path = lua_tostring(script, 1);
@@ -24,20 +24,24 @@ int knWriteFile(lua_State *script) {
 	const char *data = lua_tolstring(script, 2, &size);
 	
 	if (!path || !data) {
-		return 0;
+		return luaL_error(script, "Path or data is null");
 	}
 	
 	FILE *file = fopen(path, "wb");
 	
 	if (!file) {
-		return 0;
+		return luaL_error(script, "Could not open %s for writing", path);
 	}
 	
 	size_t written = fwrite(data, 1, size, file);
 	
 	fclose(file);
 	
-	lua_pushboolean(script, written == size);
+	if (written != size) {
+		return luaL_error(script, "Could not write data: written != size");
+	}
+	
+	lua_pushboolean(script, 1);
 	return 1;
 }
 
@@ -50,19 +54,21 @@ int knReadFile(lua_State *script) {
 	 */
 	
 	if (lua_gettop(script) < 1) {
-		return 0;
+		return luaL_error(script, "Not enough args");
 	}
 	
 	const char *path = lua_tostring(script, 1);
 	
 	if (!path) {
-		return 0;
+		return luaL_error(script, "Path is null");
 	}
 	
 	FILE *file = fopen(path, "rb");
 	
 	if (!file) {
-		return 0;
+		lua_pushnil(script);
+		return 1;
+		// return luaL_error(script, "Could not open %s for reading", path);
 	}
 	
 	// Return codes? Who cares :P
@@ -84,7 +90,7 @@ int knReadFile(lua_State *script) {
 	
 	if (!data) {
 		fclose(file);
-		return 0;
+		return luaL_error(script, "Could not allocate internal buffer (out of memory?)");
 	}
 	
 	// Read contents into memory
@@ -96,7 +102,8 @@ int knReadFile(lua_State *script) {
 		lua_pushlstring(script, data, size);
 	}
 	else {
-		lua_pushnil(script);
+		free(data);
+		return luaL_error(script, "Could not read data");
 	}
 	
 	free(data); // always free the data
@@ -113,14 +120,14 @@ int knRenameFile(lua_State *script) {
 	 */
 	
 	if (lua_gettop(script) < 1) {
-		return 0;
+		return luaL_error(script, "Not enough args");
 	}
 	
 	const char *old_path = lua_tostring(script, 1);
 	const char *new_path = lua_tostring(script, 2);
 	
 	if (!old_path || !new_path) {
-		return 0;
+		return luaL_error(script, "Old or new path is null");
 	}
 	
 	int status = rename(old_path, new_path);
@@ -139,13 +146,13 @@ int knDeleteFile(lua_State *script) {
 	 */
 	
 	if (lua_gettop(script) < 1) {
-		return 0;
+		return luaL_error(script, "Not enough args");
 	}
 	
 	const char *path = lua_tostring(script, 1);
 	
 	if (!path) {
-		return 0;
+		return luaL_error(script, "Path is null");
 	}
 	
 	int status = remove(path);
@@ -164,13 +171,13 @@ int knIsFile(lua_State *script) {
 	 */
 	
 	if (lua_gettop(script) < 1) {
-		return 0;
+		return luaL_error(script, "Not enough args");
 	}
 	
 	const char *path = lua_tostring(script, 1);
 	
 	if (!path) {
-		return 0;
+		return luaL_error(script, "Path is null");
 	}
 	
 	FILE *f = fopen(path, "rb");
@@ -192,14 +199,13 @@ int knMakeDir(lua_State *script) {
 	 */
 	
 	if (lua_gettop(script) < 1) {
-		return 0;
+		return luaL_error(script, "Not enough args");
 	}
 	
 	const char *dirname = lua_tostring(script, 1);
 	
 	if (!dirname) {
-		lua_pushboolean(script, 0);
-		return 1;
+		return luaL_error(script, "Dir name is null");
 	}
 	
 	int status = mkdir(dirname, 0777);
@@ -217,8 +223,7 @@ int knListDir(lua_State *script) {
 	const char *dirname = lua_tostring(script, 1);
 	
 	if (!dirname) {
-		lua_pushnil(script);
-		return 1;
+		return luaL_error(script, "Dirname is null");
 	}
 	
 	DIR *dir = opendir(dirname);
@@ -254,14 +259,13 @@ int knIsDir(lua_State *script) {
 	 */
 	
 	if (lua_gettop(script) < 1) {
-		return 0;
+		return luaL_error(script, "Not enough args");
 	}
 	
 	const char *dirname = lua_tostring(script, 1);
 	
 	if (!dirname) {
-		lua_pushboolean(script, 0);
-		return 1;
+		return luaL_error(script, "Dir name is null");
 	}
 	
 	DIR *dir = opendir(dirname);

@@ -96,6 +96,10 @@ int knRegDelete(lua_State *script) {
 }
 
 int knRegKeys(lua_State *script) {
+	if (lua_gettop(script) != 0) {
+		return luaL_error("Too many arguments!");
+	}
+	
 	lua_createtable(script, 0, 0);
 	
 	for (size_t i = 0; i < KH_DictLen(GetReg()); i++) {
@@ -209,6 +213,7 @@ static bool SaveDict(KH_Dict *dict, const char *path) {
 		return success == 0;
 	}
 	else {
+		remove(temp_path);
 		free(temp_path);
 		return false;
 	}
@@ -351,10 +356,42 @@ int knDbDelete(lua_State *script) {
 	return 1;
 }
 
-int knDbTrans(lua_State *script) {
+int knDbKeys(lua_State *script) {
 	/**
-	 * Disable writing a database file until the next commit.
+	 * (table) keys = knDbKeys()
+	 * 
+	 * Return a table containing all keys in the database.
 	 */
+	
+	if (lua_gettop(script) != 0) {
+		return luaL_error("Too many arguments!");
+	}
+	
+	lua_createtable(script, 0, 0);
+	
+	for (size_t i = 0; i < KH_DictLen(GetDB()); i++) {
+		lua_pushinteger(script, i + 1);
+		
+		KH_Blob *blob = KH_DictKeyIter(GetDB(), i);
+		
+		lua_pushlstring(script, (const char *) blob->data, blob->length);
+		lua_settable(script, 1);
+	}
+	
+	return 1;
+}
+
+int knDbBeginTransaction(lua_State *script) {
+	/**
+	 * knDbBeginTransaction()
+	 * 
+	 * Disable writing a database file until the next call to knDbCommit. This
+	 * is helpful when you want to make a lot of changes all at once.
+	 */
+	
+	if (gDbTransactionMode) {
+		return luaL_error(script, "Cannot start another transaction while in the middle of current transaction");
+	}
 	
 	gDbTransactionMode = true;
 	return 0;
@@ -362,8 +399,15 @@ int knDbTrans(lua_State *script) {
 
 int knDbCommit(lua_State *script) {
 	/**
-	 * Re-enable writing the database and write the database file.
+	 * (bool) writeSuccess = knDbCommit()
+	 * 
+	 * Re-enable writing the database and write the database file. Returns
+	 * status of writing the database to disk.
 	 */
+	
+	if (!gDbTransactionMode) {
+		return luaL_error(script, "Failed to commit database: Not in transaction mode");
+	}
 	
 	gDbTransactionMode = false;
 	lua_pushboolean(script, SaveDict(GetDB(), gDatabasePath));
@@ -375,6 +419,9 @@ int knEnableDatabase(lua_State *script) {
 	knRegisterFunc(script, knDbGet);
 	knRegisterFunc(script, knDbHas);
 	knRegisterFunc(script, knDbDelete);
+	knRegisterFunc(script, knDbKeys);
+	knRegisterFunc(script, knDbBeginTransaction);
+	knRegisterFunc(script, knDbCommit);
 	return 0;
 }
 
