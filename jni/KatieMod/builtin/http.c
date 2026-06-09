@@ -498,7 +498,7 @@ int knHttpsNoCert(lua_State *L) {
 		gHttps.allow_without_cert = true;
 	}
 	else {
-		return luaL_error(script, "Say the magic words!");
+		return luaL_error(L, "Say the magic words!");
 	}
 	
 	return 0;
