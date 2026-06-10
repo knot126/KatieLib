@@ -19,12 +19,14 @@ const char *KNInitLua(void);
 const char *KNDatabaseInit(void);
 const char *KNAntitamperInit(void);
 const char *KNOverlayInit(void);
+const char *KNInitShutdown(void);
 
 ModuleInitFunc submod_init_functions[] = {
 	KNInitLua,
 	KNDatabaseInit,
 	KNAntitamperInit,
 	KNOverlayInit,
+	KNInitShutdown,
 	NULL,
 };
 
