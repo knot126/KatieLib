@@ -144,7 +144,8 @@ int knHttpRequest(lua_State *script) {
 	}
 	
 #ifdef HTTP_ENABLE_MBEDTLS
-	http_t *request = http_request(method, url, body, body_size, num_headers ? headers : NULL, num_headers, gHttps.cert_data, gHttps.cert_data_size, NULL);
+	http_buffer_t cert = {.size = gHttps.cert_data_size, .data = gHttps.cert_data};
+	http_t *request = http_request(method, url, body, body_size, num_headers ? headers : NULL, num_headers, &cert, NULL);
 #else
 	http_t *request = http_request(method, url, body, body_size, num_headers ? headers : NULL, num_headers, NULL);
 #endif
