@@ -12,7 +12,7 @@
  * 
  * before you include this file in *one* C/C++ file to create the
  * implementation. If you want to enable mbedTLS support, also make sure to
- * include the mbedTLS headers and do:
+ * do:
  * 
  *    #define HTTP_ENABLE_MBEDTLS
  * 
