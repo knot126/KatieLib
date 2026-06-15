@@ -188,17 +188,28 @@ Overlay *DirOverlayCreate(const char *directory) {
 /**
  * ZIP-file based overlays, useful for loading resources in packs.
  */
-#define theZip (&(((ZipOverlayState *) this->context)->zip))
+#define MEMBER(X) (((ZipOverlayState *) this->context)->X)
+#define theZip (&MEMBER(zip))
+
+#define ZIP_OVERLAY_PRESUF_SIZE 64
 
 typedef struct ZipOverlayState {
 	mz_zip_archive zip;
+	char prefix[ZIP_OVERLAY_PRESUF_SIZE];
+	char suffix[ZIP_OVERLAY_PRESUF_SIZE];
 } ZipOverlayState;
 
 static size_t ZipOverlayWriteCallback(void *pOpaque, mz_uint64 file_ofs, const void *pBuf, size_t n) {
 	return fwrite(pBuf, 1, n, (FILE *) pOpaque);
 }
 
-FILE *ZipOverlayLoad(Overlay *this, const char *path) {
+FILE *ZipOverlayLoad(Overlay *this, const char *vpath) {
+	char path[strlen(MEMBER(prefix)) + strlen(vpath) + strlen(MEMBER(suffix)) + 1];
+	
+	strcpy(path, MEMBER(prefix));
+	strcat(path, vpath);
+	strcat(path, MEMBER(suffix));
+	
 	int fileIndex = mz_zip_reader_locate_file(theZip, path, NULL, MZ_ZIP_FLAG_CASE_SENSITIVE);
 	
 	if (fileIndex == -1) {
@@ -226,7 +237,21 @@ void ZipOverlayRelease(Overlay *this) {
 	mz_zip_reader_end(theZip);
 }
 
-Overlay *ZipOverlayCreate(const char *zip_path) {
+#define SETUP_PREFSUF(VAR) \
+	if (options->VAR) { \
+		strncpy(MEMBER(VAR), options->VAR, ZIP_OVERLAY_PRESUF_SIZE); \
+		MEMBER(VAR)[ZIP_OVERLAY_PRESUF_SIZE-1] = '\0'; \
+	} \
+	else { \
+		MEMBER(VAR)[0] = '\0'; \
+	}
+
+typedef struct ZipOverlayCreateOptions {
+	const char *prefix;
+	const char *suffix;
+} ZipOverlayCreateOptions;
+
+Overlay *ZipOverlayCreate(const char *zip_path, ZipOverlayCreateOptions *options) {
 	OverlayAllocate(this, ZipOverlayState);
 	mz_zip_zero_struct(theZip);
 	
@@ -238,10 +263,17 @@ Overlay *ZipOverlayCreate(const char *zip_path) {
 	this->load = ZipOverlayLoad;
 	this->release = ZipOverlayRelease;
 	
+	if (options) {
+		SETUP_PREFSUF(prefix);
+		SETUP_PREFSUF(suffix);
+	}
+	
 	return this;
 }
 
+#undef SETUP_PREFSUF
 #undef theZip
+#undef MEMBER
 
 /**
  * User defined callbacks - can be used to generate assets dynamically.
@@ -315,12 +347,21 @@ Overlay *LuaOverlayCreate(const char *function_name) {
 	this->load = LuaOverlayLoad;
 	this->release = LuaOverlayRelease;
 	strncpy(((LuaOverlayState *) this->context)->function_name, function_name, LUA_OVERLAY_FUNCTION_NAME_MAX_CHARS);
+	((LuaOverlayState *) this->context)->function_name[LUA_OVERLAY_FUNCTION_NAME_MAX_CHARS-1] = '\0';
 	return this;
 }
 
 /**
  * Lua interface to the OverlayManager
  */
+
+#define M_SetOptStr(VAR, NAME) { \
+	if (lua_type(L, 3) == LUA_TTABLE) { \
+		lua_getfield(L, 3, NAME); \
+		VAR = lua_tostring(L, -1); \
+		lua_pop(L, 1); \
+	} \
+}
 
 int knPushOverlay(lua_State *L) {
 	const char *type = lua_tostring(L, 1);
@@ -331,7 +372,19 @@ int knPushOverlay(lua_State *L) {
 		overlay = DirOverlayCreate(lua_tostring(L, 2));
 	}
 	else if (!strcmp(type, "zip")) {
-		overlay = ZipOverlayCreate(lua_tostring(L, 2));
+		ZipOverlayCreateOptions opts = {};
+		
+		M_SetOptStr(opts.prefix, "prefix");
+		M_SetOptStr(opts.suffix, "suffix");
+		
+		overlay = ZipOverlayCreate(lua_tostring(L, 2), &opts);
+	}
+	else if (!strcmp(type, "apk")) {
+		ZipOverlayCreateOptions opts = {
+			.prefix = "assets/",
+			.suffix = ".mp3",
+		};
+		overlay = ZipOverlayCreate(lua_tostring(L, 2), &opts);
 	}
 	else if (!strcmp(type, "callback")) {
 		overlay = LuaOverlayCreate(lua_tostring(L, 2));
