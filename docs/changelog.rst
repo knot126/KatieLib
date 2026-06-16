@@ -21,6 +21,8 @@ Release 19 (upcoming)
 - Added ``knOwnHandle()``
 - ``knInclude()`` now gives loaded blocks a name for debugging, and
   supports pre-compiled scripts made with ``luac``
+- Added ``apk`` type overlays and suffix and prefix options for ``zip``
+  overlays
 
 Release 18
 ----------
