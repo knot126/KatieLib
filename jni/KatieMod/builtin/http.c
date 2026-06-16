@@ -12,7 +12,7 @@
 
 #ifdef HTTP_ENABLE_MBEDTLS
 struct {
-	bool allow_without_cert;
+	// bool allow_without_cert;
 	unsigned char *cert_data;
 	size_t cert_data_size;
 } gHttps;
@@ -94,12 +94,13 @@ size_t fillHeaders(lua_State *L, int t, http_header_t *headers, size_t count) {
 // HTTP
 int knHttpRequest(lua_State *script) {
 	/**
-	 * request = knHttpRequest(method, url, [body, [headers]])
+	 * request = knHttpRequest(method, url, [body, [headers, [certificate]]])
 	 * 
 	 * - method: "GET", "POST", "PUT", "DELETE", etc.
 	 * - url: "http://" URL
 	 * - body: none, nil or string representing request body
 	 * - headers: none, nil or dictionary respresenting request headers
+	 * - certificate: TLS certificate, only used for HTTPS requests
 	 * 
 	 * Creates and fires an HTTP request. The first argument should be the HTTP
 	 * method, that is GET, POST, PUT, DELETE etc. The second is the URL to post
@@ -126,13 +127,6 @@ int knHttpRequest(lua_State *script) {
 		return 0;
 	}
 	
-#ifdef HTTP_ENABLE_MBEDTLS
-	if (!memcmp("https://", url, 8) && !gHttps.allow_without_cert && !gHttps.cert_data) {
-		luaL_error(script, "Certificate verification set to required but no HTTPS certificate has been installed");
-		return 0;
-	}
-#endif
-	
 	size_t body_size = 0;
 	const char *body = lua_tolstring(script, 3, &body_size);
 	
@@ -143,12 +137,18 @@ int knHttpRequest(lua_State *script) {
 		fillHeaders(script, 4, headers, num_headers);
 	}
 	
-#ifdef HTTP_ENABLE_MBEDTLS
-	http_buffer_t cert = {.size = gHttps.cert_data_size, .data = gHttps.cert_data};
+	// TLS cert
+	size_t cert_size = 0;
+	const char *cert_data = lua_tolstring(script, 5, &cert_size);
+	
+	// DEPRECATED: In the future, we will not have a global cert and instead
+	// only have an argument containing certificate data.
+	http_buffer_t cert = {
+		.size = cert_data ? cert_size : gHttps.cert_data_size,
+		.data = cert_data ? (unsigned char*)cert_data : gHttps.cert_data,
+	};
+	
 	http_t *request = http_request(method, url, body, body_size, num_headers ? headers : NULL, num_headers, &cert, NULL);
-#else
-	http_t *request = http_request(method, url, body, body_size, num_headers ? headers : NULL, num_headers, NULL);
-#endif
 	
 	if (!request) {
 		luaL_error(script, "Could not create request object");
@@ -464,6 +464,10 @@ int knHttpExtractNxArchive(lua_State *script) {
 
 #ifdef HTTP_ENABLE_MBEDTLS
 int knHttpsCert(lua_State *L) {
+	/**
+	 * DEPRECATED: Please use certificate argument of knHttpRequest().
+	 */
+	
 	if (lua_gettop(L) == 0) {
 		free(gHttps.cert_data);
 		gHttps.cert_data = NULL;
@@ -493,10 +497,17 @@ int knHttpsCert(lua_State *L) {
 }
 
 int knHttpsNoCert(lua_State *L) {
+	/**
+	 * DEPRECATED:
+	 * Not useful since https requests will be not have certs checked by
+	 * default now. While this is not secure, HTTPS is only provided for
+	 * compatibility in KnShim anyway so it doessn't matter too much.
+	 */
+	
 	const char *magic = lua_tostring(L, 1);
 	
 	if (magic && !strcmp(magic, "The foxes whispher in your ear: \"Here lies dangerous code!\"")) {
-		gHttps.allow_without_cert = true;
+		// gHttps.allow_without_cert = true;
 	}
 	else {
 		return luaL_error(L, "Say the magic words!");
