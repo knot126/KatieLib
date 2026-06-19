@@ -204,7 +204,20 @@ const char *YipLoader_LoadGame(void) {
 /* Handle mods themselves */
 YipModInfo *gModChain;
 
-static int YipLoader_ZIPFileNameIterationCallback(void *context, const char *name) {
+/* YipLoader's own mod info structure */
+YipModInfo yiploader_mod_info = {
+	.name = "YipLoader",
+	.author = "knot126",
+	.description = "Mod loader for Android games",
+	.game = NULL,
+	.version = 1,
+};
+
+typedef struct YipModIterationContext {
+	bool hadError;
+} YipModIterationContext;
+
+static int YipLoader_ZIPFileNameIterationCallback(YipModIterationContext *context, const char *name) {
 	// Check if this is a mod
 	if (strncmp(name, "lib/" KN_ARCH_STRING "/lib", strlen("lib/" KN_ARCH_STRING "/lib"))) {
 		return 1;
@@ -218,28 +231,42 @@ static int YipLoader_ZIPFileNameIterationCallback(void *context, const char *nam
 		return 1;
 	}
 	
-	name += 4;
+	// skip the "lib/" KN_ARCH_STRING "/" bit
+	name += 4 + strlen(KN_ARCH_STRING) + 1;
 	
 	// Actually start to load it
 	LogI("Will now load %s as a module", name);
 	
 	void *handle = dlopen(name, RTLD_NOW | RTLD_GLOBAL);
 	
-	char *error = dlerror();
+	char *error = NULL;
 	
-	if (error) {
-		LogE("Failed to load module %s: %s. Check that the mod isn't corrupt.", name, error);
-		return 1;
+	if (!handle) {
+		error = dlerror();
+		
+		if (error) {
+			LogE("Failed to load module %s: %s. Check that the mod isn't corrupt.", name, error);
+			context->hadError = true;
+			return 1;
+		}
 	}
 	
 	YipModInfo *mod_info = dlsym(handle, "mod_info");
 	
-	error = dlerror();
-	
-	if (error) {
-		LogE("Failed to load module %s: %s. Check that the mod contains a valid 'mod_info' symbol.", name, error);
-		dlclose(handle);
-		return 1;
+	// While returning NULL doesn't technically mean there was an error, we
+	// expect it to be non-NULL in our case anyway.
+	if (!mod_info) {
+		error = dlerror();
+		
+		if (error) {
+			LogE("Failed to load module %s: %s. Check that the mod contains a valid 'mod_info' symbol.", name, error);
+			dlclose(handle);
+			context->hadError = true;
+			return 1;
+		}
+	}
+	else {
+		LogI("Loaded mod %s by %s version %d", mod_info->name, mod_info->author, mod_info->version);
 	}
 	
 	mod_info->next = gModChain;
@@ -250,6 +277,10 @@ static int YipLoader_ZIPFileNameIterationCallback(void *context, const char *nam
 }
 
 static bool YipLoader_ModMatchesCriteria(YipModInfo *mod, YipModInfo *crit) {
+	if (mod == crit) {
+		return true;
+	}
+	
 	if (crit->version != 0 && mod->version != crit->version) {
 		return false;
 	}
@@ -269,13 +300,117 @@ static bool YipLoader_ModMatchesCriteria(YipModInfo *mod, YipModInfo *crit) {
 	return true;
 }
 
-static void YipLoader_ValidateMods(void) {
+static bool YipLoader_ValidateMod(YipModInfo *mod_info) {
+	bool valid = true;
+	
+	// Check dependencies
+	YipModInfo *current = mod_info->assumes;
+	
+	while (current) {
+		// Check against YipLoader itself
+		if (YipLoader_ModMatchesCriteria(&yiploader_mod_info, current)) {
+			goto valid;
+		}
+		
+		// Find it in mod chain
+		YipModInfo *candidate = gModChain;
+		
+		while (candidate) {
+			if (YipLoader_ModMatchesCriteria(candidate, current)) {
+				goto valid;
+			}
+		}
+		
+		LogE("Dependency validation for mod %s failed: depends on %s version %d, but mod was not found!", mod_info->name, current->name, current->version);
+		
+		valid = false;
+		
+	valid:
+		current = current->next;
+	}
+	
+	// Check for conflicting mods
+	current = mod_info->conflicts;
+	
+	while (current) {
+		YipModInfo *candidate = gModChain;
+		
+		while (candidate) {
+			if (YipLoader_ModMatchesCriteria(candidate, current)) {
+				LogE("Conflict validation for mod %s failed: conflicts with %s version %d", mod_info->name, candidate->name, candidate->version);
+				valid = false;
+				continue;
+			}
+			
+			candidate = candidate->next;
+		}
+		
+		current = current->next;
+	}
+	
+	return valid;
+}
+
+static bool YipLoader_ValidateMods(void) {
 	/**
 	 * TODO: seriously we should probably validate the mods at least A LITTLE
 	 */
+	
+	bool valid = true;
+	
+	YipModInfo *mod = gModChain;
+	
+	while (mod) {
+		if (!YipLoader_ValidateMod(mod)) {
+			valid = false;
+		}
+		
+		mod = mod->next;
+	}
+	
+	return valid;
 }
 
-static void YipLoader_InitMods(void) {
+static void YipLoader_MoveBehind(YipModInfo *mod_info, YipModInfo *crit) {
+	/**
+	 * Ensure the mod matching mod_info is behind the one matching crit
+	 */
+	
+	YipModInfo *current = gModChain;
+	
+	YipModInfo *old_prev = NULL;
+	YipModInfo *old_current = NULL;
+	YipModInfo *new_prev = NULL;
+	
+	while (current) {
+		if (YipLoader_ModMatchesCriteria(current, crit)) {
+			if (old_prev && old_current) {
+				// Remove from its current position
+				old_prev->next = old_current->next;
+				
+				// Insert at new position, after the current (our dep)
+				old_current->next = current->next;
+				current->next = old_current;
+			}
+			else {
+				// Otherwise, we're already behind this mod, so we have nothing
+				// to do.
+			}
+			
+			return;
+		}
+		else if (YipLoader_ModMatchesCriteria(current, mod_info)) {
+			// If we encouter this before exit, we're ahead and need to move
+			old_prev = new_prev;
+			old_current = old_current;
+		}
+		
+		new_prev = current;
+		current = current->next;
+	}
+}
+
+static bool YipLoader_InitMods(void) {
 	/**
 	 * Call mod_init() functions.
 	 */
@@ -291,9 +426,13 @@ static void YipLoader_InitMods(void) {
 		
 		current = current->next;
 	}
+	
+	return true;
 }
 
 const char *YipLoader_LoadMods(void) {
+	YipModIterationContext zip_iteration_context = {};
+	
 	gPackageCodePath = YipLoader_GetPackageCodePath();
 	
 	if (gPackageCodePath) {
@@ -303,15 +442,24 @@ const char *YipLoader_LoadMods(void) {
 		return "Could not get package code path";
 	}
 	
-	int error = YipLoader_ForEachZIPFileEntry(gPackageCodePath, NULL, YipLoader_ZIPFileNameIterationCallback);
+	int error = YipLoader_ForEachZIPFileEntry(gPackageCodePath, &zip_iteration_context, (void *) YipLoader_ZIPFileNameIterationCallback);
 	
 	if (error) {
 		LogE("YipLoader_ForEachZIPFileEntry returned %d", error);
 		return "Failed to find modules for loading";
 	}
 	
-	YipLoader_ValidateMods();
-	YipLoader_InitMods();
+	if (zip_iteration_context.hadError) {
+		return "Errors occured while loading some mods (see log for details)";
+	}
+	
+	if (!YipLoader_ValidateMods()) {
+		return "Could not validate mods";
+	}
+	
+	if (!YipLoader_InitMods()) {
+		return "Could not init mods";
+	}
 	
 	return NULL;
 }

@@ -11,6 +11,7 @@ void *gLibAndroid;
 void *gLibC;
 const char *gGameName;
 const char *gPackageCodePath;
+char *gPackageName;
 
 typedef const char *(*ModuleInitFunc)(void);
 
@@ -38,6 +39,7 @@ const char *kaite_init_globals(void) {
 	gApp = YipGetAndroidAppStruct();
 	gLeaf = YipGetLeafInstance();
 	gGameName = YipGetGameName();
+	gPackageName = KNGetPackageName();
 	
 	gLibAndroid = dlopen("libandroid.so", RTLD_NOW | RTLD_GLOBAL);
 	

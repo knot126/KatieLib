@@ -216,3 +216,35 @@ bool KNGetAppVersion(char *buffer, size_t maxSize) {
 	return true;
 }
 
+char *KNGetPackageName(void) {
+	/**
+	 * Get app's package name
+	 */
+	
+	JavaVM *vm = gApp->activity->vm;
+	JNIEnv *jni = NULL;
+	
+	if ((*vm)->GetEnv(vm, (void **)&jni, JNI_VERSION_1_6) != JNI_OK) {
+		abort();
+	}
+	
+	jobject activity = gApp->activity->clazz;
+	
+	jmethodID getPackageName = jni_get_method_id(jni, "android/app/NativeActivity", "getPackageName", "()Ljava/lang/String;");
+	
+	// activity.getPackageName()
+	jstring packageName = (*jni)->CallObjectMethod(jni, activity, getPackageName);
+	JNI_EXCEPTION_ABORT(jni, "pending exception after activity.getPackageName()");
+	
+	const char *packageNameUtf = (*jni)->GetStringUTFChars(jni, packageName, NULL);
+	
+	if (!packageNameUtf) {
+		return NULL;
+	}
+	
+	char *packageNameUtfOwned = strdup(packageNameUtf);
+	
+	(*jni)->ReleaseStringUTFChars(jni, packageName, packageNameUtf);
+	
+	return packageNameUtfOwned;
+}
