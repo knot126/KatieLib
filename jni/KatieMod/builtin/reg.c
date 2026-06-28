@@ -513,6 +513,25 @@ int knPropertyBagAccessor__len(lua_State *script) {
 	return 1;
 }
 
+int knPropertyBagAccessor__call(lua_State *script) {
+	PropertyBagAccesss *pba = lua_touserdata(script, 1); // pba
+	const size_t dict_len = KH_DictLen(pba->dict);
+	bool match = true;
+	
+	lua_createtable(script, dict_len, 0);
+	
+	for (size_t i = 0; i < dict_len; i++) {
+		lua_pushinteger(script, i + 1);
+		
+		KH_Blob *blob = KH_DictKeyIter(pba->dict, i);
+		
+		lua_pushlstring(script, (const char *) blob->data, blob->length);
+		lua_settable(script, 2);
+	}
+	
+	return 1;
+}
+
 // int knPropertyBagAccessor__gc(lua_State *script) {
 // 	PropertyBagAccesss *pba = lua_touserdata(script);
 // 	
@@ -533,6 +552,8 @@ int knPropertyBagAccessor(lua_State *script, const char *global, KH_Dict *dict) 
 		lua_setfield(script, -2, "__newindex");
 		lua_pushcfunction(script, knPropertyBagAccessor__len);
 		lua_setfield(script, -2, "__len");
+		lua_pushcfunction(script, knPropertyBagAccessor__call);
+		lua_setfield(script, -2, "__call");
 	}
 	
 	lua_setmetatable(script, -1);
