@@ -425,6 +425,128 @@ int knEnableDatabase(lua_State *script) {
 	return 0;
 }
 
+/**
+ * NEW REGISTRY/DB UNIFIED INTERFACE
+ */
+
+typedef struct PropertyBagAccesss {
+	KH_Dict *dict;
+	// char *private_namespace;
+} PropertyBagAccesss;
+
+int knPropertyBagAccessor__index(lua_State *script) {
+	/**
+	 * Return value associated with key, or nil if there is none
+	 */
+	
+	PropertyBagAccesss *pba = lua_touserdata(script, 1); // pba
+	
+	size_t key_size;
+	const char *key = lua_tolstring(script, 2, &key_size); // key
+	
+	if (!key) {
+		return luaL_error(script, "Key is null (how even)");
+	}
+	else {
+		KH_Blob *value = KH_DictGet(pba->dict, knBufToBlob(key));
+		
+		if (value) {
+			lua_pushlstring(script, (const char *)value->data, value->length);
+		}
+		else {
+			lua_pushnil(script);
+		}
+		
+		return 1;
+	}
+}
+
+int knPropertyBagAccessor__newindex(lua_State *script) {
+	/**
+	 * properties[key] = value
+	 * properties.key = value
+	 * 
+	 * Set (when assigning non-nil) or delete (when assigning nil) entry
+	 */
+	
+	PropertyBagAccesss *pba = lua_touserdata(script, 1); // pba
+	
+	size_t key_size;
+	const char *key = lua_tolstring(script, 2, &key_size); // key
+	
+	bool need_save = false;
+	
+	if (lua_isnoneornil(script, 3)) {
+		if (KH_DictHas(pba->dict, knBufToBlob(key))) {
+			if (!KH_DictDelete(pba->dict, knBufToBlob(key))) {
+				return luaL_error(script, "Failed to delete property value!");
+			}
+			else {
+				need_save = true;
+			}
+		}
+	}
+	else {
+		size_t value_size;
+		const char *value = lua_tolstring(script, 3, &value_size); // key
+		
+		if (!KH_DictSet(pba->dict, knBufToBlob(key), knBufToBlob(value))) {
+			return luaL_error(script, "Failed to set property value!");
+		}
+		else {
+			need_save = true;
+		}
+	}
+	
+	if (need_save && pba->dict == gDatabase) {
+		if (!SaveDict(gDatabase, gDatabasePath)) {
+			return luaL_error(script, "Failed to save database!");
+		}
+	}
+	
+	return 0;
+}
+
+int knPropertyBagAccessor__len(lua_State *script) {
+	PropertyBagAccesss *pba = lua_touserdata(script, 1); // pba
+	lua_pushinteger(script, KH_DictLen(pba->dict));
+	return 1;
+}
+
+// int knPropertyBagAccessor__gc(lua_State *script) {
+// 	PropertyBagAccesss *pba = lua_touserdata(script);
+// 	
+// 	if (pba->private_namespace) {
+// 		free(pba->private_namespace);
+// 	}
+// }
+
+int knPropertyBagAccessor(lua_State *script, const char *global, KH_Dict *dict) {
+	PropertyBagAccesss *pba = lua_newuserdata(script, sizeof *pba);
+	pba->dict = dict;
+	// pba->private_namespace = namespace ? strdup(namespace) : NULL;
+	
+	if (luaL_newmetatable(script, "knPropertyBagAccessor")) {
+		lua_pushcfunction(script, knPropertyBagAccessor__index);
+		lua_setfield(script, -2, "__index");
+		lua_pushcfunction(script, knPropertyBagAccessor__newindex);
+		lua_setfield(script, -2, "__newindex");
+		lua_pushcfunction(script, knPropertyBagAccessor__len);
+		lua_setfield(script, -2, "__len");
+	}
+	
+	lua_setmetatable(script, -1);
+	lua_setglobal(script, global);
+	
+	return 0;
+}
+
+int knEnableProperties(lua_State *script) {
+	knPropertyBagAccessor(script, "registry", gRegistry);
+	knPropertyBagAccessor(script, "database", gDatabase);
+	return 0;
+}
+
 const char *KNDatabaseInit(void) {
 	const char *internal_path = gApp->activity->internalDataPath;
 	const char *base_path = "database.kn";
@@ -434,6 +556,9 @@ const char *KNDatabaseInit(void) {
 	strcpy(gDatabasePath, internal_path);
 	strcat(gDatabasePath, "/");
 	strcat(gDatabasePath, base_path);
+	
+	GetDB();
+	GetReg();
 	
 	return NULL;
 }
