@@ -36,8 +36,46 @@ int knPatch(lua_State *script) {
 	return 1;
 }
 
+int knPeek(lua_State *script) {
+	/**
+	 * Return `size` bytes at the address of the given symbol, virtual
+	 * address, or raw address.
+	 */
+	
+	if (lua_gettop(script) < 2) {
+		return luaL_error(script, "Not enough args");
+	}
+	
+	Leaf *leaf = YipGetLeafInstance();
+	void *addr = NULL;
+	
+	switch (lua_type(script, 1)) {
+		case LUA_TSTRING: {
+			addr = YipLookupSymbol(lua_tostring(script, 1));
+			break;
+		}
+		case LUA_TNUMBER: {
+			addr = LeafGetRealAddr(leaf, lua_tointeger(script, 1));
+			break;
+		}
+		case LUA_TLIGHTUSERDATA: {
+			addr = lua_touserdata(script, 1);
+			break;
+		}
+		default: {
+			return luaL_error(script, "First argument must be a string (symbol), number (virtual address), or light userdata (raw address)");
+		}
+	}
+	
+	size_t size = lua_tointeger(script, 2);
+	
+	lua_pushlstring(script, addr, size);
+	return 1;
+}
+
 int knEnablePatching(lua_State *script) {
 	knRegisterFunc(script, knPatch);
+	knRegisterFunc(script, knPeek);
 	
 	return 0;
 }

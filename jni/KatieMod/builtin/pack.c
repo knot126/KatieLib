@@ -1,8 +1,8 @@
 #include "lua_utils.h"
 #include "../util.h"
 
-#define PACK_TYPE(STRNAME, TYPE) else if (!strcmp(typename, STRNAME)) { \
-		TYPE n = lua_tonumber(script, 2); \
+#define PACK_TYPE(STRNAME, TYPE, TYPECLASS) else if (!strcmp(typename, STRNAME)) { \
+		TYPE n = lua_to ## TYPECLASS(script, 2); \
 		lua_pushlstring(script, (const char *) &n, sizeof n); \
 	}
 
@@ -19,13 +19,14 @@ int knPack(lua_State *script) {
 		const char *typename = lua_tostring(script, 1);
 		
 		if (false) {}
-		PACK_TYPE("float", float)
-		PACK_TYPE("double", double)
-		PACK_TYPE("char", int8_t)
-		PACK_TYPE("bool", int8_t)
-		PACK_TYPE("short", int16_t)
-		PACK_TYPE("int", int32_t)
-		PACK_TYPE("long", int64_t)
+		PACK_TYPE("float", float, number)
+		PACK_TYPE("double", double, number)
+		PACK_TYPE("char", int8_t, integer)
+		PACK_TYPE("bool", int8_t, integer)
+		PACK_TYPE("short", int16_t, integer)
+		PACK_TYPE("int", int32_t, integer)
+		PACK_TYPE("long", int64_t, integer)
+		PACK_TYPE("pointer", void *, userdata)
 		else {
 			luaL_error(script, "Invalid pack type string: '%s'", typename);
 		}
@@ -74,6 +75,7 @@ int knUnpack(lua_State *script) {
 	UNPACK_TYPE("short", int16_t, integer)
 	UNPACK_TYPE("int", int32_t, integer)
 	UNPACK_TYPE("long", int64_t, integer)
+	UNPACK_TYPE("pointer", void *, lightuserdata)
 	else {
 		luaL_error(script, "'%s' is not a supported unpack data type", target_type);
 	}
