@@ -16,12 +16,12 @@ int knPatch(lua_State *script) {
 	
 	size_t vaddr = lua_tointeger(script, 1);
 	
+	if (lua_type(script, 2) != LUA_TSTRING) {
+		return luaL_error(script, "Data is not a string: use knPack() to convert numbers first");
+	}
+	
 	size_t size;
 	const char *data = lua_tolstring(script, 2, &size);
-	
-	if (!data) {
-		return luaL_error(script, "Data is not a string or couldn't be converted to one; use knPack for number values");
-	}
 	
 	YipBuffer orig;
 	
