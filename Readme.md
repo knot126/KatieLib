@@ -1,12 +1,12 @@
 <img src="logo/FoxthingText.png" style="width: 100%"/>
 
-# KatieMod
+# KatieLib
 
-KatieMod is a mod for YipLoader which provides compatiblity with the legacy KnShim, and also provides some new features.
+KatieLib is a utility mod for YipLoader which provides compatiblity with and continues the legacy of KnShim, and also provides some new features. :3
 
 ## Docs
 
-The documentation is kept on [the new Smash Hit Wiki](https://smashhit.miraheze.org/wiki/KnShim/Documentation). Feel free to contribute if you have an account. :3
+The pre-generated HTML version of the documentation is kept on [my personal website](https://knot126.github.io/docs/katielib/html/index.html).
 
 ## Building
 

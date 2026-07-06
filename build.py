@@ -51,11 +51,11 @@ if "--no-regen-header" not in sys.argv:
 status = os.system(f"ndk-build")
 
 if not status:
-	for arch in {"armeabi-v7a", "arm64-v8a"}:
-		try:
-			os.remove(f"libs/{arch}/libYipLoader.so")
-		except:
-			pass
+	# for arch in {"armeabi-v7a", "arm64-v8a"}:
+	# 	try:
+	# 		os.remove(f"libs/{arch}/libYipLoader.so")
+	# 	except:
+	# 		pass
 	
 	if "--upgrade" in sys.argv:
 		apks = os.listdir("/tmp/apk-editor-studio/apk")
