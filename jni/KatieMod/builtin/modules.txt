@@ -2,6 +2,7 @@ Log smashhit grannysmith
 Patching smashhit grannysmith
 Http smashhit grannysmith
 System smashhit grannysmith
+String smashhit grannysmith
 Registry smashhit grannysmith
 Database smashhit grannysmith
 Properties smashhit grannysmith
