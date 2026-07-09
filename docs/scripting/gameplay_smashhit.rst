@@ -26,5 +26,5 @@ Player Parameter
 When functions take a player parameter, it can be one of the following values:
 
 - ``-1``: The singleplayer player
-- ``0``: The first multiplayer player
-- ``1``: The second multiplayer player
+- ``0``: Player on the left
+- ``1``: Player on the right
