@@ -1,3 +1,5 @@
+#include <stdlib.h>
+
 #include "lua_utils.h"
 #include "../util.h"
 
@@ -83,21 +85,108 @@ int knUnpack(lua_State *script) {
 	return 1;
 }
 
-int knIsLittleEndian(lua_State *script) {
+#define IS_HEXDIGIT(CH) ( ((CH) >= '0' && (CH) <= '9') || ((CH) >= 'a' && (CH) <= 'f') || ((CH) >= 'A' && (CH) <= 'F') )
+
+static inline uint8_t hex2nibble(char ch) {
+	if (ch >= '0' && ch <= '9') return ch - '0';
+	if (ch >= 'a' && ch <= 'f') return ch - 'a' + 0xa;
+	if (ch >= 'A' && ch <= 'F') return ch - 'A' + 0xA;
+	return 0;
+}
+
+int knHexToBin(lua_State *script) {
 	/**
-	 * (boolean) platformIsLittleEndian = knIsLittleEndian()
+	 * (boolean) data = knHexToBin(hexdata)
+	 * 
+	 * Convert hex data (potentially with spaces or other useless chars) to
+	 * binary data
 	 */
 	
-	union { int8_t a; int16_t b; } u;
-	u.b = 1;
-	lua_pushboolean(script, u.a);
+	const char * const hex = lua_tostring(script, 1);
+	
+	size_t hexdigits = 0;
+	
+	// Estimate size of final data
+	for (size_t i = 0; i < strlen(hex); i++) {
+		if (IS_HEXDIGIT(hex[i])) {
+			hexdigits += 1;
+		}
+	}
+	
+	// That is not a very nice size
+	if (hexdigits & 1) {
+		return luaL_error(script, "Number of hex digits must be even");
+	}
+	
+	hexdigits >>= 1;
+	
+	// Allocate temp buffer
+	uint8_t *data = malloc(hexdigits);
+	
+	if (!data) {
+		return luaL_error(script, "Failed to allocate buffer for hex to binary conversion");
+	}
+	
+	// Copy data
+	size_t data_loc = 0;
+	
+	for (size_t i = 0; i < strlen(hex); i++) {
+		if (IS_HEXDIGIT(hex[i])) {
+			if (data_loc & 1) {
+				data[data_loc >> 1] <<= 4;
+				data[data_loc >> 1] |= hex2nibble(hex[i]);
+			}
+			else {
+				data[data_loc >> 1] = hex2nibble(hex[i]);
+			}
+			
+			data_loc += 1;
+		}
+	}
+	
+	// Push it
+	lua_pushlstring(script, (void *) data, hexdigits);
+	free(data);
+	return 1;
+}
+
+static inline char nibble2hex(uint8_t nib) {
+	if (nib <= 9) return '0' + nib;
+	return 'a' + nib - 10;
+}
+
+int knBinToHex(lua_State *script) {
+	size_t size;
+	const uint8_t *data = (void *) lua_tolstring(script, 1, &size);
+	
+	if (!data) {
+		return luaL_error(script, "Data is NULL");
+	}
+	
+	// Create temp buffer
+	char *hex = malloc(size << 1);
+	
+	if (!hex) {
+		return luaL_error(script, "Allocation error");
+	}
+	
+	for (size_t i = 0; i < size; i++) {
+		hex[(i << 1)] = nibble2hex(data[i] >> 4);
+		hex[(i << 1) | 1] = nibble2hex(data[i] & 0xf);
+	}
+	
+	// Yay result
+	lua_pushlstring(script, hex, size << 1);
+	free(hex);
 	return 1;
 }
 
 int knEnablePack(lua_State *script) {
 	knRegisterFunc(script, knPack);
 	knRegisterFunc(script, knUnpack);
-	// knRegisterFunc(script, knIsLittleEndian);
+	
+	knRegisterFunc(script, knHexToBin);
+	knRegisterFunc(script, knBinToHex);
 	
 	return 0;
 }
