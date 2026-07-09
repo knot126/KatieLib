@@ -25,6 +25,7 @@ LOCAL_SRC_FILES := KatieMod/mod_info.c \
 	KatieMod/builtin/log.c \
 	KatieMod/builtin/patching.c \
 	KatieMod/builtin/http.c \
+	KatieMod/builtin/string.c \
 	KatieMod/builtin/system.c \
 	KatieMod/builtin/reg.c \
 	KatieMod/builtin/files.c \
