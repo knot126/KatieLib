@@ -18,6 +18,19 @@ int knSetDisabled(lua_State *script) {
 	return 0;
 }
 
+static int knCustomAtPanic(lua_State *script) {
+	const char *message = lua_tostring(script, -1);
+	
+	if (message) {
+		__android_log_print(ANDROID_LOG_FATAL, KN_GAME_STRING, "Lua panic: %s", message);
+	}
+	else {
+		__android_log_write(ANDROID_LOG_FATAL, KN_GAME_STRING, "Lua panicked and we don't know why!!!");
+	}
+	
+	return 0;
+}
+
 #define LOAD_CORE_LIB(L, NAME, FUNC) lua_pushcfunction(L, FUNC); lua_pushstring(L, NAME); lua_call(L, 1, 0);
 
 int luaL_openlibs_hook(lua_State *script) {
@@ -38,6 +51,9 @@ int luaL_openlibs_hook(lua_State *script) {
 		KNSHIM_PUSH_ENABLE_ENUM();
 		knRegisterFunc(script, knSetDisabled);
 	}
+	
+	// Custom panic handler (prints debug info)
+	lua_atpanic(script, knCustomAtPanic);
 	
 	return 0;
 }
