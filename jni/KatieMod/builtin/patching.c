@@ -7,7 +7,7 @@
 
 int knPatch(lua_State *script) {
 	/**
-	 * (bool) success = knPatch(addressSpec, (string) data)
+	 * (string) originalData = knPatch(addressSpec, (string) data)
 	 */
 	
 	if (lua_gettop(script) < 2) {
