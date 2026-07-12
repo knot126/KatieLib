@@ -43,7 +43,7 @@ int knPack(lua_State *script) {
 	return 1;
 }
 
-#define UNPACK_TYPE(NAME, TYPE, TYPECLASS) if (!strcmp(target_type, NAME)) { \
+#define UNPACK_TYPE(NAME, TYPE, TYPECLASS) else if (!strcmp(target_type, NAME)) { \
 		if (in_size == sizeof(TYPE)) { \
 			lua_push ## TYPECLASS(script, ( *(TYPE *)in_data )); \
 		} \
@@ -79,7 +79,7 @@ int knUnpack(lua_State *script) {
 	UNPACK_TYPE("long", int64_t, integer)
 	UNPACK_TYPE("pointer", void *, lightuserdata)
 	else {
-		luaL_error(script, "'%s' is not a supported unpack data type", target_type);
+		return luaL_error(script, "'%s' is not a supported unpack data type", target_type);
 	}
 	
 	return 1;
