@@ -5,6 +5,7 @@
 
 #include <yiploader/yiploader.h>
 #include <dlfcn.h>
+#include <stdio.h>
 #include "../util.h"
 #include "../builtin/lua_utils.h"
 
@@ -484,11 +485,11 @@ void luaL_unref_old(lua_State *L, int t, int ref) {
 }
 
 int luaL_loadfile_old(lua_State *L, const char *filename) {
-	return luaL_loadfile_new(L, filename);
+	return luaL_loadfilex_new(L, filename, NULL); // 5.2
 }
 
 int luaL_loadbuffer_old(lua_State *L, const char *buff, size_t sz, const char *name) {
-	return luaL_loadbuffer_new(L, buff, sz, name);
+	return luaL_loadbufferx_new(L, buff, sz, name, NULL); // 5.2
 }
 
 int luaL_loadstring_old(lua_State *L, const char *s) {
@@ -504,7 +505,9 @@ const char *luaL_gsub_old(lua_State *L, const char *s, const char *p, const char
 }
 
 const char *luaL_findtable_old(lua_State *L, int idx, const char *fname, int szhint) {
-	return luaL_findtable_new(L, idx, fname, szhint);
+	// 5.2 Removed, part of old lib system
+	// return luaL_findtable_new(L, idx, fname, szhint);
+	return NULL;
 }
 
 void luaL_buffinit_old(lua_State *L, luaL_Buffer *B) {
@@ -512,7 +515,7 @@ void luaL_buffinit_old(lua_State *L, luaL_Buffer *B) {
 }
 
 char *luaL_prepbuffer_old(luaL_Buffer *B) {
-	return luaL_prepbuffer_new(B);
+	return luaL_prepbuffsize_new(B, BUFSIZ); // 5.2
 }
 
 void luaL_addlstring_old(luaL_Buffer *B, const char *s, size_t l) {
