@@ -6,6 +6,7 @@
 #include <yiploader/yiploader.h>
 #include <dlfcn.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <stdarg.h>
 #include "../util.h"
 #include "../builtin/lua_utils.h"
@@ -25,7 +26,13 @@ typedef unsigned long long lua_Unsigned;
 
 #include "lua52_loader.c"
 
+// int called_times = 0;
+
 static inline int convert_index(int idx) {
+	// if (called_times++ > 4500) {
+	// 	abort();
+	// }
+	
 	// Convert legacy upvalue index to 5.2 one
 	if (idx < LUA_GLOBALSINDEX && idx > LUA_GLOBALSINDEX-256) {
 		// For 5.1:   up(i) = LUA_GLOBALSINDEX  - i
@@ -128,19 +135,19 @@ int lua_lessthan_old(lua_State *L, int idx1, int idx2) {
 }
 
 lua_Number lua_tonumber_old(lua_State *L, int idx) {
-	return lua_tonumberx_new(L, idx, NULL); // 5.2
+	return lua_tonumberx_new(L, convert_index(idx), NULL); // 5.2
 }
 
 lua_Integer lua_tointeger_old(lua_State *L, int idx) {
-	return lua_tointegerx_new(L, idx, NULL); // 5.2
+	return lua_tointegerx_new(L, convert_index(idx), NULL); // 5.2
 }
 
 int lua_toboolean_old(lua_State *L, int idx) {
-	return lua_toboolean_new(L, idx);
+	return lua_toboolean_new(L, convert_index(idx));
 }
 
 const char *lua_tolstring_old(lua_State *L, int idx, size_t *len) {
-	return lua_tolstring_new(L, idx, len);
+	return lua_tolstring_new(L, convert_index(idx), len);
 }
 
 size_t lua_objlen_old(lua_State *L, int idx) {
