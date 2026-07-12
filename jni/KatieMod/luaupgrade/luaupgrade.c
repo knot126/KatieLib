@@ -6,6 +6,7 @@
 #include <yiploader/yiploader.h>
 #include <dlfcn.h>
 #include <stdio.h>
+#include <stdarg.h>
 #include "../util.h"
 #include "../builtin/lua_utils.h"
 
@@ -165,8 +166,12 @@ const char *lua_pushvfstring_old(lua_State *L, const char *fmt, va_list argp) {
 }
 
 const char *lua_pushfstring_old(lua_State *L, const char *fmt, ...) {
-	// WARNING: Call has ellipsis, doing a big big hack!
-	((void(*)(void))lua_pushfstring_new)();
+	const char *ret;
+	va_list argp;
+	va_start(argp, fmt);
+	ret = lua_pushvfstring_new(L, fmt, argp);
+	va_end(argp);
+	return ret;
 }
 
 void lua_pushcclosure_old(lua_State *L, lua_CFunction fn, int n) {
@@ -283,7 +288,7 @@ int lua_yield_old(lua_State *L, int nresults) {
 }
 
 int lua_resume_old(lua_State *L, int narg) {
-	return lua_resume_new(L, narg, NULL);
+	return lua_resume_new(L, NULL, narg);
 }
 
 int lua_status_old(lua_State *L) {
@@ -475,8 +480,13 @@ void luaL_where_old(lua_State *L, int lvl) {
 }
 
 int luaL_error_old(lua_State *L, const char *fmt, ...) {
-	// WARNING: Call has ellipsis, doing a big big hack!
-	((void(*)(void))luaL_error_new)();
+	va_list argp;
+	va_start(argp, fmt);
+	luaL_where_new(L, 1);
+	lua_pushvfstring_new(L, fmt, argp);
+	va_end(argp);
+	lua_concat_new(L, 2);
+	return lua_error_new(L);
 }
 
 int luaL_checkoption_old(lua_State *L, int narg, const char *def, const char * const lst[]) {
