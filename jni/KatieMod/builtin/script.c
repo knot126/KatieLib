@@ -33,16 +33,29 @@ static int knCustomAtPanic(lua_State *script) {
 
 #define LOAD_CORE_LIB(L, NAME, FUNC) lua_pushcfunction(L, FUNC); lua_pushstring(L, NAME); lua_call(L, 1, 0);
 
+extern void *liblua;
+extern void (*luaL_openlibs_new)(lua_State *L);
+
 int luaL_openlibs_hook(lua_State *script) {
-	// Load core libs manually so all of them are loaded
-	LOAD_CORE_LIB(script, "", luaopen_base);
-	LOAD_CORE_LIB(script, LUA_LOADLIBNAME, luaopen_package);
-	LOAD_CORE_LIB(script, LUA_TABLIBNAME, luaopen_table);
-	LOAD_CORE_LIB(script, LUA_IOLIBNAME, luaopen_io);
-	LOAD_CORE_LIB(script, LUA_OSLIBNAME, luaopen_os);
-	LOAD_CORE_LIB(script, LUA_STRLIBNAME, luaopen_string);
-	LOAD_CORE_LIB(script, LUA_MATHLIBNAME, luaopen_math);
-	LOAD_CORE_LIB(script, LUA_DBLIBNAME, luaopen_debug);
+	if (liblua) {
+		// When using upgraded Lua we assume that the person who built that
+		// copy of Lua isn't an asshole and has included all libraries with
+		// luaL_openlibs.
+		luaL_openlibs_new(script);
+	}
+	else {
+		// Unfortunately Smash Hit sandboxes scripts for no reason by removing
+		// some libs from luaL_openlibs, so just load each manually when using
+		// the built-in copy to re-enable everything.
+		LOAD_CORE_LIB(script, "", luaopen_base);
+		LOAD_CORE_LIB(script, LUA_LOADLIBNAME, luaopen_package);
+		LOAD_CORE_LIB(script, LUA_TABLIBNAME, luaopen_table);
+		LOAD_CORE_LIB(script, LUA_IOLIBNAME, luaopen_io);
+		LOAD_CORE_LIB(script, LUA_OSLIBNAME, luaopen_os);
+		LOAD_CORE_LIB(script, LUA_STRLIBNAME, luaopen_string);
+		LOAD_CORE_LIB(script, LUA_MATHLIBNAME, luaopen_math);
+		LOAD_CORE_LIB(script, LUA_DBLIBNAME, luaopen_debug);
+	}
 	
 	// Load KnShim extensions
 	KNSHIM_ENABLE();
