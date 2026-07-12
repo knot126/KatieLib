@@ -190,7 +190,12 @@ void lua_gettable_old(lua_State *L, int idx) {
 }
 
 void lua_getfield_old(lua_State *L, int idx, const char *k) {
-	lua_getfield_new(L, idx, k);
+	if (idx == LUA_GLOBALSINDEX) {
+		lua_getglobal_new(L, k);
+	}
+	else {
+		lua_getfield_new(L, idx, k);
+	}
 }
 
 void lua_rawget_old(lua_State *L, int idx) {
@@ -215,7 +220,6 @@ int lua_getmetatable_old(lua_State *L, int objindex) {
 
 void lua_getfenv_old(lua_State *L, int idx) {
 	// TODO 5.2
-	// lua_getfenv_new(L, idx);
 	luaL_error_new(L, "lua_setfenv is not implemented anymore");
 }
 
@@ -224,7 +228,12 @@ void lua_settable_old(lua_State *L, int idx) {
 }
 
 void lua_setfield_old(lua_State *L, int idx, const char *k) {
-	lua_setfield_new(L, idx, k);
+	if (idx == LUA_GLOBALSINDEX) {
+		lua_setglobal_new(L, k);
+	}
+	else {
+		lua_setfield_new(L, idx, k);
+	}
 }
 
 void lua_rawset_old(lua_State *L, int idx) {
@@ -256,7 +265,6 @@ int lua_pcall_old(lua_State *L, int nargs, int nresults, int errfunc) {
 
 int lua_cpcall_old(lua_State *L, lua_CFunction func, void *ud) {
 	// 5.2 deprecated cpcall
-	// return lua_cpcall_new(L, func, ud);
 	lua_pushcclosure_new(L, func, 0);
 	lua_pushlightuserdata_new(L, ud);
 	return lua_pcallk_new(L, 1, 0, 0, 0, NULL);
@@ -309,7 +317,6 @@ void lua_setallocf_old(lua_State *L, lua_Alloc f, void *ud) {
 void lua_setlevel_old(lua_State *from, lua_State *to) {
 	// Removed 5.2 w/o documentation of that - was labelled "hack" in 5.1 so I
 	// assume it was not supposed to be a public API anyway.
-	// lua_setlevel_new(from, to);
 }
 
 int lua_getstack_old(lua_State *L, int level, lua_Debug *ar) {
@@ -506,7 +513,6 @@ const char *luaL_gsub_old(lua_State *L, const char *s, const char *p, const char
 
 const char *luaL_findtable_old(lua_State *L, int idx, const char *fname, int szhint) {
 	// 5.2 Removed, part of old lib system
-	// return luaL_findtable_new(L, idx, fname, szhint);
 	return NULL;
 }
 
