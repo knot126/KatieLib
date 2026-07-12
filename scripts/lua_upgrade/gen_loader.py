@@ -34,6 +34,8 @@ print()
 print("void lua_upgrade_load52(void) {")
 
 for funcname in sorted(FUNCTION_NAMES):
-	print(f'	{funcname}_new = dlsym(liblua, "{funcname}");')
+	print(f"""	if (!({funcname}_new = dlsym(liblua, "{funcname}"))) {{
+		LogW("lua_upgrade: Failed to load function %s", "{funcname}");
+	}}""")
 
 print("}")

@@ -331,151 +331,445 @@ int (*lua_gethookmask_new)(lua_State *L);
 int (*lua_gethookcount_new)(lua_State *L);
 
 void lua_upgrade_load52(void) {
-	luaL_addlstring_new = dlsym(liblua, "luaL_addlstring");
-	luaL_addstring_new = dlsym(liblua, "luaL_addstring");
-	luaL_addvalue_new = dlsym(liblua, "luaL_addvalue");
-	luaL_argerror_new = dlsym(liblua, "luaL_argerror");
-	luaL_buffinit_new = dlsym(liblua, "luaL_buffinit");
-	luaL_buffinitsize_new = dlsym(liblua, "luaL_buffinitsize");
-	luaL_callmeta_new = dlsym(liblua, "luaL_callmeta");
-	luaL_checkany_new = dlsym(liblua, "luaL_checkany");
-	luaL_checkinteger_new = dlsym(liblua, "luaL_checkinteger");
-	luaL_checklstring_new = dlsym(liblua, "luaL_checklstring");
-	luaL_checknumber_new = dlsym(liblua, "luaL_checknumber");
-	luaL_checkoption_new = dlsym(liblua, "luaL_checkoption");
-	luaL_checkstack_new = dlsym(liblua, "luaL_checkstack");
-	luaL_checktype_new = dlsym(liblua, "luaL_checktype");
-	luaL_checkudata_new = dlsym(liblua, "luaL_checkudata");
-	luaL_checkunsigned_new = dlsym(liblua, "luaL_checkunsigned");
-	luaL_checkversion__new = dlsym(liblua, "luaL_checkversion_");
-	luaL_error_new = dlsym(liblua, "luaL_error");
-	luaL_execresult_new = dlsym(liblua, "luaL_execresult");
-	luaL_fileresult_new = dlsym(liblua, "luaL_fileresult");
-	luaL_getmetafield_new = dlsym(liblua, "luaL_getmetafield");
-	luaL_getsubtable_new = dlsym(liblua, "luaL_getsubtable");
-	luaL_gsub_new = dlsym(liblua, "luaL_gsub");
-	luaL_len_new = dlsym(liblua, "luaL_len");
-	luaL_loadbufferx_new = dlsym(liblua, "luaL_loadbufferx");
-	luaL_loadfilex_new = dlsym(liblua, "luaL_loadfilex");
-	luaL_loadstring_new = dlsym(liblua, "luaL_loadstring");
-	luaL_newmetatable_new = dlsym(liblua, "luaL_newmetatable");
-	luaL_newstate_new = dlsym(liblua, "luaL_newstate");
-	luaL_openlibs_new = dlsym(liblua, "luaL_openlibs");
-	luaL_optinteger_new = dlsym(liblua, "luaL_optinteger");
-	luaL_optlstring_new = dlsym(liblua, "luaL_optlstring");
-	luaL_optnumber_new = dlsym(liblua, "luaL_optnumber");
-	luaL_optunsigned_new = dlsym(liblua, "luaL_optunsigned");
-	luaL_prepbuffsize_new = dlsym(liblua, "luaL_prepbuffsize");
-	luaL_pushresult_new = dlsym(liblua, "luaL_pushresult");
-	luaL_pushresultsize_new = dlsym(liblua, "luaL_pushresultsize");
-	luaL_ref_new = dlsym(liblua, "luaL_ref");
-	luaL_requiref_new = dlsym(liblua, "luaL_requiref");
-	luaL_setfuncs_new = dlsym(liblua, "luaL_setfuncs");
-	luaL_setmetatable_new = dlsym(liblua, "luaL_setmetatable");
-	luaL_testudata_new = dlsym(liblua, "luaL_testudata");
-	luaL_tolstring_new = dlsym(liblua, "luaL_tolstring");
-	luaL_traceback_new = dlsym(liblua, "luaL_traceback");
-	luaL_unref_new = dlsym(liblua, "luaL_unref");
-	luaL_where_new = dlsym(liblua, "luaL_where");
-	lua_absindex_new = dlsym(liblua, "lua_absindex");
-	lua_arith_new = dlsym(liblua, "lua_arith");
-	lua_atpanic_new = dlsym(liblua, "lua_atpanic");
-	lua_callk_new = dlsym(liblua, "lua_callk");
-	lua_checkstack_new = dlsym(liblua, "lua_checkstack");
-	lua_close_new = dlsym(liblua, "lua_close");
-	lua_compare_new = dlsym(liblua, "lua_compare");
-	lua_concat_new = dlsym(liblua, "lua_concat");
-	lua_copy_new = dlsym(liblua, "lua_copy");
-	lua_createtable_new = dlsym(liblua, "lua_createtable");
-	lua_dump_new = dlsym(liblua, "lua_dump");
-	lua_error_new = dlsym(liblua, "lua_error");
-	lua_gc_new = dlsym(liblua, "lua_gc");
-	lua_getallocf_new = dlsym(liblua, "lua_getallocf");
-	lua_getctx_new = dlsym(liblua, "lua_getctx");
-	lua_getfield_new = dlsym(liblua, "lua_getfield");
-	lua_getglobal_new = dlsym(liblua, "lua_getglobal");
-	lua_gethook_new = dlsym(liblua, "lua_gethook");
-	lua_gethookcount_new = dlsym(liblua, "lua_gethookcount");
-	lua_gethookmask_new = dlsym(liblua, "lua_gethookmask");
-	lua_getinfo_new = dlsym(liblua, "lua_getinfo");
-	lua_getlocal_new = dlsym(liblua, "lua_getlocal");
-	lua_getmetatable_new = dlsym(liblua, "lua_getmetatable");
-	lua_getstack_new = dlsym(liblua, "lua_getstack");
-	lua_gettable_new = dlsym(liblua, "lua_gettable");
-	lua_gettop_new = dlsym(liblua, "lua_gettop");
-	lua_getupvalue_new = dlsym(liblua, "lua_getupvalue");
-	lua_getuservalue_new = dlsym(liblua, "lua_getuservalue");
-	lua_insert_new = dlsym(liblua, "lua_insert");
-	lua_iscfunction_new = dlsym(liblua, "lua_iscfunction");
-	lua_isnumber_new = dlsym(liblua, "lua_isnumber");
-	lua_isstring_new = dlsym(liblua, "lua_isstring");
-	lua_isuserdata_new = dlsym(liblua, "lua_isuserdata");
-	lua_len_new = dlsym(liblua, "lua_len");
-	lua_load_new = dlsym(liblua, "lua_load");
-	lua_newstate_new = dlsym(liblua, "lua_newstate");
-	lua_newthread_new = dlsym(liblua, "lua_newthread");
-	lua_newuserdata_new = dlsym(liblua, "lua_newuserdata");
-	lua_next_new = dlsym(liblua, "lua_next");
-	lua_pcallk_new = dlsym(liblua, "lua_pcallk");
-	lua_pushboolean_new = dlsym(liblua, "lua_pushboolean");
-	lua_pushcclosure_new = dlsym(liblua, "lua_pushcclosure");
-	lua_pushfstring_new = dlsym(liblua, "lua_pushfstring");
-	lua_pushinteger_new = dlsym(liblua, "lua_pushinteger");
-	lua_pushlightuserdata_new = dlsym(liblua, "lua_pushlightuserdata");
-	lua_pushlstring_new = dlsym(liblua, "lua_pushlstring");
-	lua_pushnil_new = dlsym(liblua, "lua_pushnil");
-	lua_pushnumber_new = dlsym(liblua, "lua_pushnumber");
-	lua_pushstring_new = dlsym(liblua, "lua_pushstring");
-	lua_pushthread_new = dlsym(liblua, "lua_pushthread");
-	lua_pushunsigned_new = dlsym(liblua, "lua_pushunsigned");
-	lua_pushvalue_new = dlsym(liblua, "lua_pushvalue");
-	lua_pushvfstring_new = dlsym(liblua, "lua_pushvfstring");
-	lua_rawequal_new = dlsym(liblua, "lua_rawequal");
-	lua_rawget_new = dlsym(liblua, "lua_rawget");
-	lua_rawgeti_new = dlsym(liblua, "lua_rawgeti");
-	lua_rawgetp_new = dlsym(liblua, "lua_rawgetp");
-	lua_rawlen_new = dlsym(liblua, "lua_rawlen");
-	lua_rawset_new = dlsym(liblua, "lua_rawset");
-	lua_rawseti_new = dlsym(liblua, "lua_rawseti");
-	lua_rawsetp_new = dlsym(liblua, "lua_rawsetp");
-	lua_remove_new = dlsym(liblua, "lua_remove");
-	lua_replace_new = dlsym(liblua, "lua_replace");
-	lua_resume_new = dlsym(liblua, "lua_resume");
-	lua_setallocf_new = dlsym(liblua, "lua_setallocf");
-	lua_setfield_new = dlsym(liblua, "lua_setfield");
-	lua_setglobal_new = dlsym(liblua, "lua_setglobal");
-	lua_sethook_new = dlsym(liblua, "lua_sethook");
-	lua_setlocal_new = dlsym(liblua, "lua_setlocal");
-	lua_setmetatable_new = dlsym(liblua, "lua_setmetatable");
-	lua_settable_new = dlsym(liblua, "lua_settable");
-	lua_settop_new = dlsym(liblua, "lua_settop");
-	lua_setupvalue_new = dlsym(liblua, "lua_setupvalue");
-	lua_setuservalue_new = dlsym(liblua, "lua_setuservalue");
-	lua_status_new = dlsym(liblua, "lua_status");
-	lua_toboolean_new = dlsym(liblua, "lua_toboolean");
-	lua_tocfunction_new = dlsym(liblua, "lua_tocfunction");
-	lua_tointegerx_new = dlsym(liblua, "lua_tointegerx");
-	lua_tolstring_new = dlsym(liblua, "lua_tolstring");
-	lua_tonumberx_new = dlsym(liblua, "lua_tonumberx");
-	lua_topointer_new = dlsym(liblua, "lua_topointer");
-	lua_tothread_new = dlsym(liblua, "lua_tothread");
-	lua_tounsignedx_new = dlsym(liblua, "lua_tounsignedx");
-	lua_touserdata_new = dlsym(liblua, "lua_touserdata");
-	lua_type_new = dlsym(liblua, "lua_type");
-	lua_typename_new = dlsym(liblua, "lua_typename");
-	lua_upvalueid_new = dlsym(liblua, "lua_upvalueid");
-	lua_upvaluejoin_new = dlsym(liblua, "lua_upvaluejoin");
-	lua_version_new = dlsym(liblua, "lua_version");
-	lua_xmove_new = dlsym(liblua, "lua_xmove");
-	lua_yieldk_new = dlsym(liblua, "lua_yieldk");
-	luaopen_base_new = dlsym(liblua, "luaopen_base");
-	luaopen_bit32_new = dlsym(liblua, "luaopen_bit32");
-	luaopen_coroutine_new = dlsym(liblua, "luaopen_coroutine");
-	luaopen_debug_new = dlsym(liblua, "luaopen_debug");
-	luaopen_io_new = dlsym(liblua, "luaopen_io");
-	luaopen_math_new = dlsym(liblua, "luaopen_math");
-	luaopen_os_new = dlsym(liblua, "luaopen_os");
-	luaopen_package_new = dlsym(liblua, "luaopen_package");
-	luaopen_string_new = dlsym(liblua, "luaopen_string");
-	luaopen_table_new = dlsym(liblua, "luaopen_table");
+	if (!(luaL_addlstring_new = dlsym(liblua, "luaL_addlstring"))) {
+		LogW("lua_upgrade: Failed to load function %s", "luaL_addlstring");
+	}
+	if (!(luaL_addstring_new = dlsym(liblua, "luaL_addstring"))) {
+		LogW("lua_upgrade: Failed to load function %s", "luaL_addstring");
+	}
+	if (!(luaL_addvalue_new = dlsym(liblua, "luaL_addvalue"))) {
+		LogW("lua_upgrade: Failed to load function %s", "luaL_addvalue");
+	}
+	if (!(luaL_argerror_new = dlsym(liblua, "luaL_argerror"))) {
+		LogW("lua_upgrade: Failed to load function %s", "luaL_argerror");
+	}
+	if (!(luaL_buffinit_new = dlsym(liblua, "luaL_buffinit"))) {
+		LogW("lua_upgrade: Failed to load function %s", "luaL_buffinit");
+	}
+	if (!(luaL_buffinitsize_new = dlsym(liblua, "luaL_buffinitsize"))) {
+		LogW("lua_upgrade: Failed to load function %s", "luaL_buffinitsize");
+	}
+	if (!(luaL_callmeta_new = dlsym(liblua, "luaL_callmeta"))) {
+		LogW("lua_upgrade: Failed to load function %s", "luaL_callmeta");
+	}
+	if (!(luaL_checkany_new = dlsym(liblua, "luaL_checkany"))) {
+		LogW("lua_upgrade: Failed to load function %s", "luaL_checkany");
+	}
+	if (!(luaL_checkinteger_new = dlsym(liblua, "luaL_checkinteger"))) {
+		LogW("lua_upgrade: Failed to load function %s", "luaL_checkinteger");
+	}
+	if (!(luaL_checklstring_new = dlsym(liblua, "luaL_checklstring"))) {
+		LogW("lua_upgrade: Failed to load function %s", "luaL_checklstring");
+	}
+	if (!(luaL_checknumber_new = dlsym(liblua, "luaL_checknumber"))) {
+		LogW("lua_upgrade: Failed to load function %s", "luaL_checknumber");
+	}
+	if (!(luaL_checkoption_new = dlsym(liblua, "luaL_checkoption"))) {
+		LogW("lua_upgrade: Failed to load function %s", "luaL_checkoption");
+	}
+	if (!(luaL_checkstack_new = dlsym(liblua, "luaL_checkstack"))) {
+		LogW("lua_upgrade: Failed to load function %s", "luaL_checkstack");
+	}
+	if (!(luaL_checktype_new = dlsym(liblua, "luaL_checktype"))) {
+		LogW("lua_upgrade: Failed to load function %s", "luaL_checktype");
+	}
+	if (!(luaL_checkudata_new = dlsym(liblua, "luaL_checkudata"))) {
+		LogW("lua_upgrade: Failed to load function %s", "luaL_checkudata");
+	}
+	if (!(luaL_checkunsigned_new = dlsym(liblua, "luaL_checkunsigned"))) {
+		LogW("lua_upgrade: Failed to load function %s", "luaL_checkunsigned");
+	}
+	if (!(luaL_checkversion__new = dlsym(liblua, "luaL_checkversion_"))) {
+		LogW("lua_upgrade: Failed to load function %s", "luaL_checkversion_");
+	}
+	if (!(luaL_error_new = dlsym(liblua, "luaL_error"))) {
+		LogW("lua_upgrade: Failed to load function %s", "luaL_error");
+	}
+	if (!(luaL_execresult_new = dlsym(liblua, "luaL_execresult"))) {
+		LogW("lua_upgrade: Failed to load function %s", "luaL_execresult");
+	}
+	if (!(luaL_fileresult_new = dlsym(liblua, "luaL_fileresult"))) {
+		LogW("lua_upgrade: Failed to load function %s", "luaL_fileresult");
+	}
+	if (!(luaL_getmetafield_new = dlsym(liblua, "luaL_getmetafield"))) {
+		LogW("lua_upgrade: Failed to load function %s", "luaL_getmetafield");
+	}
+	if (!(luaL_getsubtable_new = dlsym(liblua, "luaL_getsubtable"))) {
+		LogW("lua_upgrade: Failed to load function %s", "luaL_getsubtable");
+	}
+	if (!(luaL_gsub_new = dlsym(liblua, "luaL_gsub"))) {
+		LogW("lua_upgrade: Failed to load function %s", "luaL_gsub");
+	}
+	if (!(luaL_len_new = dlsym(liblua, "luaL_len"))) {
+		LogW("lua_upgrade: Failed to load function %s", "luaL_len");
+	}
+	if (!(luaL_loadbufferx_new = dlsym(liblua, "luaL_loadbufferx"))) {
+		LogW("lua_upgrade: Failed to load function %s", "luaL_loadbufferx");
+	}
+	if (!(luaL_loadfilex_new = dlsym(liblua, "luaL_loadfilex"))) {
+		LogW("lua_upgrade: Failed to load function %s", "luaL_loadfilex");
+	}
+	if (!(luaL_loadstring_new = dlsym(liblua, "luaL_loadstring"))) {
+		LogW("lua_upgrade: Failed to load function %s", "luaL_loadstring");
+	}
+	if (!(luaL_newmetatable_new = dlsym(liblua, "luaL_newmetatable"))) {
+		LogW("lua_upgrade: Failed to load function %s", "luaL_newmetatable");
+	}
+	if (!(luaL_newstate_new = dlsym(liblua, "luaL_newstate"))) {
+		LogW("lua_upgrade: Failed to load function %s", "luaL_newstate");
+	}
+	if (!(luaL_openlibs_new = dlsym(liblua, "luaL_openlibs"))) {
+		LogW("lua_upgrade: Failed to load function %s", "luaL_openlibs");
+	}
+	if (!(luaL_optinteger_new = dlsym(liblua, "luaL_optinteger"))) {
+		LogW("lua_upgrade: Failed to load function %s", "luaL_optinteger");
+	}
+	if (!(luaL_optlstring_new = dlsym(liblua, "luaL_optlstring"))) {
+		LogW("lua_upgrade: Failed to load function %s", "luaL_optlstring");
+	}
+	if (!(luaL_optnumber_new = dlsym(liblua, "luaL_optnumber"))) {
+		LogW("lua_upgrade: Failed to load function %s", "luaL_optnumber");
+	}
+	if (!(luaL_optunsigned_new = dlsym(liblua, "luaL_optunsigned"))) {
+		LogW("lua_upgrade: Failed to load function %s", "luaL_optunsigned");
+	}
+	if (!(luaL_prepbuffsize_new = dlsym(liblua, "luaL_prepbuffsize"))) {
+		LogW("lua_upgrade: Failed to load function %s", "luaL_prepbuffsize");
+	}
+	if (!(luaL_pushresult_new = dlsym(liblua, "luaL_pushresult"))) {
+		LogW("lua_upgrade: Failed to load function %s", "luaL_pushresult");
+	}
+	if (!(luaL_pushresultsize_new = dlsym(liblua, "luaL_pushresultsize"))) {
+		LogW("lua_upgrade: Failed to load function %s", "luaL_pushresultsize");
+	}
+	if (!(luaL_ref_new = dlsym(liblua, "luaL_ref"))) {
+		LogW("lua_upgrade: Failed to load function %s", "luaL_ref");
+	}
+	if (!(luaL_requiref_new = dlsym(liblua, "luaL_requiref"))) {
+		LogW("lua_upgrade: Failed to load function %s", "luaL_requiref");
+	}
+	if (!(luaL_setfuncs_new = dlsym(liblua, "luaL_setfuncs"))) {
+		LogW("lua_upgrade: Failed to load function %s", "luaL_setfuncs");
+	}
+	if (!(luaL_setmetatable_new = dlsym(liblua, "luaL_setmetatable"))) {
+		LogW("lua_upgrade: Failed to load function %s", "luaL_setmetatable");
+	}
+	if (!(luaL_testudata_new = dlsym(liblua, "luaL_testudata"))) {
+		LogW("lua_upgrade: Failed to load function %s", "luaL_testudata");
+	}
+	if (!(luaL_tolstring_new = dlsym(liblua, "luaL_tolstring"))) {
+		LogW("lua_upgrade: Failed to load function %s", "luaL_tolstring");
+	}
+	if (!(luaL_traceback_new = dlsym(liblua, "luaL_traceback"))) {
+		LogW("lua_upgrade: Failed to load function %s", "luaL_traceback");
+	}
+	if (!(luaL_unref_new = dlsym(liblua, "luaL_unref"))) {
+		LogW("lua_upgrade: Failed to load function %s", "luaL_unref");
+	}
+	if (!(luaL_where_new = dlsym(liblua, "luaL_where"))) {
+		LogW("lua_upgrade: Failed to load function %s", "luaL_where");
+	}
+	if (!(lua_absindex_new = dlsym(liblua, "lua_absindex"))) {
+		LogW("lua_upgrade: Failed to load function %s", "lua_absindex");
+	}
+	if (!(lua_arith_new = dlsym(liblua, "lua_arith"))) {
+		LogW("lua_upgrade: Failed to load function %s", "lua_arith");
+	}
+	if (!(lua_atpanic_new = dlsym(liblua, "lua_atpanic"))) {
+		LogW("lua_upgrade: Failed to load function %s", "lua_atpanic");
+	}
+	if (!(lua_callk_new = dlsym(liblua, "lua_callk"))) {
+		LogW("lua_upgrade: Failed to load function %s", "lua_callk");
+	}
+	if (!(lua_checkstack_new = dlsym(liblua, "lua_checkstack"))) {
+		LogW("lua_upgrade: Failed to load function %s", "lua_checkstack");
+	}
+	if (!(lua_close_new = dlsym(liblua, "lua_close"))) {
+		LogW("lua_upgrade: Failed to load function %s", "lua_close");
+	}
+	if (!(lua_compare_new = dlsym(liblua, "lua_compare"))) {
+		LogW("lua_upgrade: Failed to load function %s", "lua_compare");
+	}
+	if (!(lua_concat_new = dlsym(liblua, "lua_concat"))) {
+		LogW("lua_upgrade: Failed to load function %s", "lua_concat");
+	}
+	if (!(lua_copy_new = dlsym(liblua, "lua_copy"))) {
+		LogW("lua_upgrade: Failed to load function %s", "lua_copy");
+	}
+	if (!(lua_createtable_new = dlsym(liblua, "lua_createtable"))) {
+		LogW("lua_upgrade: Failed to load function %s", "lua_createtable");
+	}
+	if (!(lua_dump_new = dlsym(liblua, "lua_dump"))) {
+		LogW("lua_upgrade: Failed to load function %s", "lua_dump");
+	}
+	if (!(lua_error_new = dlsym(liblua, "lua_error"))) {
+		LogW("lua_upgrade: Failed to load function %s", "lua_error");
+	}
+	if (!(lua_gc_new = dlsym(liblua, "lua_gc"))) {
+		LogW("lua_upgrade: Failed to load function %s", "lua_gc");
+	}
+	if (!(lua_getallocf_new = dlsym(liblua, "lua_getallocf"))) {
+		LogW("lua_upgrade: Failed to load function %s", "lua_getallocf");
+	}
+	if (!(lua_getctx_new = dlsym(liblua, "lua_getctx"))) {
+		LogW("lua_upgrade: Failed to load function %s", "lua_getctx");
+	}
+	if (!(lua_getfield_new = dlsym(liblua, "lua_getfield"))) {
+		LogW("lua_upgrade: Failed to load function %s", "lua_getfield");
+	}
+	if (!(lua_getglobal_new = dlsym(liblua, "lua_getglobal"))) {
+		LogW("lua_upgrade: Failed to load function %s", "lua_getglobal");
+	}
+	if (!(lua_gethook_new = dlsym(liblua, "lua_gethook"))) {
+		LogW("lua_upgrade: Failed to load function %s", "lua_gethook");
+	}
+	if (!(lua_gethookcount_new = dlsym(liblua, "lua_gethookcount"))) {
+		LogW("lua_upgrade: Failed to load function %s", "lua_gethookcount");
+	}
+	if (!(lua_gethookmask_new = dlsym(liblua, "lua_gethookmask"))) {
+		LogW("lua_upgrade: Failed to load function %s", "lua_gethookmask");
+	}
+	if (!(lua_getinfo_new = dlsym(liblua, "lua_getinfo"))) {
+		LogW("lua_upgrade: Failed to load function %s", "lua_getinfo");
+	}
+	if (!(lua_getlocal_new = dlsym(liblua, "lua_getlocal"))) {
+		LogW("lua_upgrade: Failed to load function %s", "lua_getlocal");
+	}
+	if (!(lua_getmetatable_new = dlsym(liblua, "lua_getmetatable"))) {
+		LogW("lua_upgrade: Failed to load function %s", "lua_getmetatable");
+	}
+	if (!(lua_getstack_new = dlsym(liblua, "lua_getstack"))) {
+		LogW("lua_upgrade: Failed to load function %s", "lua_getstack");
+	}
+	if (!(lua_gettable_new = dlsym(liblua, "lua_gettable"))) {
+		LogW("lua_upgrade: Failed to load function %s", "lua_gettable");
+	}
+	if (!(lua_gettop_new = dlsym(liblua, "lua_gettop"))) {
+		LogW("lua_upgrade: Failed to load function %s", "lua_gettop");
+	}
+	if (!(lua_getupvalue_new = dlsym(liblua, "lua_getupvalue"))) {
+		LogW("lua_upgrade: Failed to load function %s", "lua_getupvalue");
+	}
+	if (!(lua_getuservalue_new = dlsym(liblua, "lua_getuservalue"))) {
+		LogW("lua_upgrade: Failed to load function %s", "lua_getuservalue");
+	}
+	if (!(lua_insert_new = dlsym(liblua, "lua_insert"))) {
+		LogW("lua_upgrade: Failed to load function %s", "lua_insert");
+	}
+	if (!(lua_iscfunction_new = dlsym(liblua, "lua_iscfunction"))) {
+		LogW("lua_upgrade: Failed to load function %s", "lua_iscfunction");
+	}
+	if (!(lua_isnumber_new = dlsym(liblua, "lua_isnumber"))) {
+		LogW("lua_upgrade: Failed to load function %s", "lua_isnumber");
+	}
+	if (!(lua_isstring_new = dlsym(liblua, "lua_isstring"))) {
+		LogW("lua_upgrade: Failed to load function %s", "lua_isstring");
+	}
+	if (!(lua_isuserdata_new = dlsym(liblua, "lua_isuserdata"))) {
+		LogW("lua_upgrade: Failed to load function %s", "lua_isuserdata");
+	}
+	if (!(lua_len_new = dlsym(liblua, "lua_len"))) {
+		LogW("lua_upgrade: Failed to load function %s", "lua_len");
+	}
+	if (!(lua_load_new = dlsym(liblua, "lua_load"))) {
+		LogW("lua_upgrade: Failed to load function %s", "lua_load");
+	}
+	if (!(lua_newstate_new = dlsym(liblua, "lua_newstate"))) {
+		LogW("lua_upgrade: Failed to load function %s", "lua_newstate");
+	}
+	if (!(lua_newthread_new = dlsym(liblua, "lua_newthread"))) {
+		LogW("lua_upgrade: Failed to load function %s", "lua_newthread");
+	}
+	if (!(lua_newuserdata_new = dlsym(liblua, "lua_newuserdata"))) {
+		LogW("lua_upgrade: Failed to load function %s", "lua_newuserdata");
+	}
+	if (!(lua_next_new = dlsym(liblua, "lua_next"))) {
+		LogW("lua_upgrade: Failed to load function %s", "lua_next");
+	}
+	if (!(lua_pcallk_new = dlsym(liblua, "lua_pcallk"))) {
+		LogW("lua_upgrade: Failed to load function %s", "lua_pcallk");
+	}
+	if (!(lua_pushboolean_new = dlsym(liblua, "lua_pushboolean"))) {
+		LogW("lua_upgrade: Failed to load function %s", "lua_pushboolean");
+	}
+	if (!(lua_pushcclosure_new = dlsym(liblua, "lua_pushcclosure"))) {
+		LogW("lua_upgrade: Failed to load function %s", "lua_pushcclosure");
+	}
+	if (!(lua_pushfstring_new = dlsym(liblua, "lua_pushfstring"))) {
+		LogW("lua_upgrade: Failed to load function %s", "lua_pushfstring");
+	}
+	if (!(lua_pushinteger_new = dlsym(liblua, "lua_pushinteger"))) {
+		LogW("lua_upgrade: Failed to load function %s", "lua_pushinteger");
+	}
+	if (!(lua_pushlightuserdata_new = dlsym(liblua, "lua_pushlightuserdata"))) {
+		LogW("lua_upgrade: Failed to load function %s", "lua_pushlightuserdata");
+	}
+	if (!(lua_pushlstring_new = dlsym(liblua, "lua_pushlstring"))) {
+		LogW("lua_upgrade: Failed to load function %s", "lua_pushlstring");
+	}
+	if (!(lua_pushnil_new = dlsym(liblua, "lua_pushnil"))) {
+		LogW("lua_upgrade: Failed to load function %s", "lua_pushnil");
+	}
+	if (!(lua_pushnumber_new = dlsym(liblua, "lua_pushnumber"))) {
+		LogW("lua_upgrade: Failed to load function %s", "lua_pushnumber");
+	}
+	if (!(lua_pushstring_new = dlsym(liblua, "lua_pushstring"))) {
+		LogW("lua_upgrade: Failed to load function %s", "lua_pushstring");
+	}
+	if (!(lua_pushthread_new = dlsym(liblua, "lua_pushthread"))) {
+		LogW("lua_upgrade: Failed to load function %s", "lua_pushthread");
+	}
+	if (!(lua_pushunsigned_new = dlsym(liblua, "lua_pushunsigned"))) {
+		LogW("lua_upgrade: Failed to load function %s", "lua_pushunsigned");
+	}
+	if (!(lua_pushvalue_new = dlsym(liblua, "lua_pushvalue"))) {
+		LogW("lua_upgrade: Failed to load function %s", "lua_pushvalue");
+	}
+	if (!(lua_pushvfstring_new = dlsym(liblua, "lua_pushvfstring"))) {
+		LogW("lua_upgrade: Failed to load function %s", "lua_pushvfstring");
+	}
+	if (!(lua_rawequal_new = dlsym(liblua, "lua_rawequal"))) {
+		LogW("lua_upgrade: Failed to load function %s", "lua_rawequal");
+	}
+	if (!(lua_rawget_new = dlsym(liblua, "lua_rawget"))) {
+		LogW("lua_upgrade: Failed to load function %s", "lua_rawget");
+	}
+	if (!(lua_rawgeti_new = dlsym(liblua, "lua_rawgeti"))) {
+		LogW("lua_upgrade: Failed to load function %s", "lua_rawgeti");
+	}
+	if (!(lua_rawgetp_new = dlsym(liblua, "lua_rawgetp"))) {
+		LogW("lua_upgrade: Failed to load function %s", "lua_rawgetp");
+	}
+	if (!(lua_rawlen_new = dlsym(liblua, "lua_rawlen"))) {
+		LogW("lua_upgrade: Failed to load function %s", "lua_rawlen");
+	}
+	if (!(lua_rawset_new = dlsym(liblua, "lua_rawset"))) {
+		LogW("lua_upgrade: Failed to load function %s", "lua_rawset");
+	}
+	if (!(lua_rawseti_new = dlsym(liblua, "lua_rawseti"))) {
+		LogW("lua_upgrade: Failed to load function %s", "lua_rawseti");
+	}
+	if (!(lua_rawsetp_new = dlsym(liblua, "lua_rawsetp"))) {
+		LogW("lua_upgrade: Failed to load function %s", "lua_rawsetp");
+	}
+	if (!(lua_remove_new = dlsym(liblua, "lua_remove"))) {
+		LogW("lua_upgrade: Failed to load function %s", "lua_remove");
+	}
+	if (!(lua_replace_new = dlsym(liblua, "lua_replace"))) {
+		LogW("lua_upgrade: Failed to load function %s", "lua_replace");
+	}
+	if (!(lua_resume_new = dlsym(liblua, "lua_resume"))) {
+		LogW("lua_upgrade: Failed to load function %s", "lua_resume");
+	}
+	if (!(lua_setallocf_new = dlsym(liblua, "lua_setallocf"))) {
+		LogW("lua_upgrade: Failed to load function %s", "lua_setallocf");
+	}
+	if (!(lua_setfield_new = dlsym(liblua, "lua_setfield"))) {
+		LogW("lua_upgrade: Failed to load function %s", "lua_setfield");
+	}
+	if (!(lua_setglobal_new = dlsym(liblua, "lua_setglobal"))) {
+		LogW("lua_upgrade: Failed to load function %s", "lua_setglobal");
+	}
+	if (!(lua_sethook_new = dlsym(liblua, "lua_sethook"))) {
+		LogW("lua_upgrade: Failed to load function %s", "lua_sethook");
+	}
+	if (!(lua_setlocal_new = dlsym(liblua, "lua_setlocal"))) {
+		LogW("lua_upgrade: Failed to load function %s", "lua_setlocal");
+	}
+	if (!(lua_setmetatable_new = dlsym(liblua, "lua_setmetatable"))) {
+		LogW("lua_upgrade: Failed to load function %s", "lua_setmetatable");
+	}
+	if (!(lua_settable_new = dlsym(liblua, "lua_settable"))) {
+		LogW("lua_upgrade: Failed to load function %s", "lua_settable");
+	}
+	if (!(lua_settop_new = dlsym(liblua, "lua_settop"))) {
+		LogW("lua_upgrade: Failed to load function %s", "lua_settop");
+	}
+	if (!(lua_setupvalue_new = dlsym(liblua, "lua_setupvalue"))) {
+		LogW("lua_upgrade: Failed to load function %s", "lua_setupvalue");
+	}
+	if (!(lua_setuservalue_new = dlsym(liblua, "lua_setuservalue"))) {
+		LogW("lua_upgrade: Failed to load function %s", "lua_setuservalue");
+	}
+	if (!(lua_status_new = dlsym(liblua, "lua_status"))) {
+		LogW("lua_upgrade: Failed to load function %s", "lua_status");
+	}
+	if (!(lua_toboolean_new = dlsym(liblua, "lua_toboolean"))) {
+		LogW("lua_upgrade: Failed to load function %s", "lua_toboolean");
+	}
+	if (!(lua_tocfunction_new = dlsym(liblua, "lua_tocfunction"))) {
+		LogW("lua_upgrade: Failed to load function %s", "lua_tocfunction");
+	}
+	if (!(lua_tointegerx_new = dlsym(liblua, "lua_tointegerx"))) {
+		LogW("lua_upgrade: Failed to load function %s", "lua_tointegerx");
+	}
+	if (!(lua_tolstring_new = dlsym(liblua, "lua_tolstring"))) {
+		LogW("lua_upgrade: Failed to load function %s", "lua_tolstring");
+	}
+	if (!(lua_tonumberx_new = dlsym(liblua, "lua_tonumberx"))) {
+		LogW("lua_upgrade: Failed to load function %s", "lua_tonumberx");
+	}
+	if (!(lua_topointer_new = dlsym(liblua, "lua_topointer"))) {
+		LogW("lua_upgrade: Failed to load function %s", "lua_topointer");
+	}
+	if (!(lua_tothread_new = dlsym(liblua, "lua_tothread"))) {
+		LogW("lua_upgrade: Failed to load function %s", "lua_tothread");
+	}
+	if (!(lua_tounsignedx_new = dlsym(liblua, "lua_tounsignedx"))) {
+		LogW("lua_upgrade: Failed to load function %s", "lua_tounsignedx");
+	}
+	if (!(lua_touserdata_new = dlsym(liblua, "lua_touserdata"))) {
+		LogW("lua_upgrade: Failed to load function %s", "lua_touserdata");
+	}
+	if (!(lua_type_new = dlsym(liblua, "lua_type"))) {
+		LogW("lua_upgrade: Failed to load function %s", "lua_type");
+	}
+	if (!(lua_typename_new = dlsym(liblua, "lua_typename"))) {
+		LogW("lua_upgrade: Failed to load function %s", "lua_typename");
+	}
+	if (!(lua_upvalueid_new = dlsym(liblua, "lua_upvalueid"))) {
+		LogW("lua_upgrade: Failed to load function %s", "lua_upvalueid");
+	}
+	if (!(lua_upvaluejoin_new = dlsym(liblua, "lua_upvaluejoin"))) {
+		LogW("lua_upgrade: Failed to load function %s", "lua_upvaluejoin");
+	}
+	if (!(lua_version_new = dlsym(liblua, "lua_version"))) {
+		LogW("lua_upgrade: Failed to load function %s", "lua_version");
+	}
+	if (!(lua_xmove_new = dlsym(liblua, "lua_xmove"))) {
+		LogW("lua_upgrade: Failed to load function %s", "lua_xmove");
+	}
+	if (!(lua_yieldk_new = dlsym(liblua, "lua_yieldk"))) {
+		LogW("lua_upgrade: Failed to load function %s", "lua_yieldk");
+	}
+	if (!(luaopen_base_new = dlsym(liblua, "luaopen_base"))) {
+		LogW("lua_upgrade: Failed to load function %s", "luaopen_base");
+	}
+	if (!(luaopen_bit32_new = dlsym(liblua, "luaopen_bit32"))) {
+		LogW("lua_upgrade: Failed to load function %s", "luaopen_bit32");
+	}
+	if (!(luaopen_coroutine_new = dlsym(liblua, "luaopen_coroutine"))) {
+		LogW("lua_upgrade: Failed to load function %s", "luaopen_coroutine");
+	}
+	if (!(luaopen_debug_new = dlsym(liblua, "luaopen_debug"))) {
+		LogW("lua_upgrade: Failed to load function %s", "luaopen_debug");
+	}
+	if (!(luaopen_io_new = dlsym(liblua, "luaopen_io"))) {
+		LogW("lua_upgrade: Failed to load function %s", "luaopen_io");
+	}
+	if (!(luaopen_math_new = dlsym(liblua, "luaopen_math"))) {
+		LogW("lua_upgrade: Failed to load function %s", "luaopen_math");
+	}
+	if (!(luaopen_os_new = dlsym(liblua, "luaopen_os"))) {
+		LogW("lua_upgrade: Failed to load function %s", "luaopen_os");
+	}
+	if (!(luaopen_package_new = dlsym(liblua, "luaopen_package"))) {
+		LogW("lua_upgrade: Failed to load function %s", "luaopen_package");
+	}
+	if (!(luaopen_string_new = dlsym(liblua, "luaopen_string"))) {
+		LogW("lua_upgrade: Failed to load function %s", "luaopen_string");
+	}
+	if (!(luaopen_table_new = dlsym(liblua, "luaopen_table"))) {
+		LogW("lua_upgrade: Failed to load function %s", "luaopen_table");
+	}
 }
