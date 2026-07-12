@@ -213,7 +213,7 @@ int lua_getmetatable_old(lua_State *L, int objindex) {
 }
 
 void lua_getfenv_old(lua_State *L, int idx) {
-	// TODO
+	// TODO 5.2
 	// lua_getfenv_new(L, idx);
 	luaL_error_new(L, "lua_setfenv is not implemented anymore");
 }
@@ -239,6 +239,7 @@ int lua_setmetatable_old(lua_State *L, int objindex) {
 }
 
 int lua_setfenv_old(lua_State *L, int idx) {
+	// 5.2
 	// TODO: Find some way to reimplement this properly
 	// return lua_setfenv_new(L, idx);
 	return luaL_error_new(L, "lua_setfenv is not implemented anymore");
@@ -387,11 +388,16 @@ void luaL_openlibs_old(lua_State *L) {
 }
 
 void luaL_openlib_old(lua_State *L, const char *libname, const luaL_Reg *l, int nup) {
-	luaL_openlib_new(L, libname, l, nup);
+	// 5.2 Removed -- TODO find alternative? not sure if its needed tho
 }
 
 void luaL_register_old(lua_State *L, const char *libname, const luaL_Reg *l) {
-	luaL_register_new(L, libname, l);
+	// 5.2 Removed
+	// TODO: This is a very, very poor substitute for the 5.1 way of doing
+	// things, but it should work okay since we don't really use luaL_register.
+	if (libname) lua_createtable_new(L, 0, 0);
+	luaL_setfuncs_new(L, l, 0);
+	if (libname) lua_setglobal_new(L, libname);
 }
 
 int luaL_getmetafield_old(lua_State *L, int obj, const char *e) {
@@ -403,7 +409,9 @@ int luaL_callmeta_old(lua_State *L, int obj, const char *e) {
 }
 
 int luaL_typerror_old(lua_State *L, int narg, const char *tname) {
-	return luaL_typerror_new(L, narg, tname);
+	// 5.2 Removed, simple to reimplement though
+	const char *msg = lua_pushfstring_new(L, "%s expected, got %s", tname, luaL_typename(L, narg));
+	return luaL_argerror_new(L, narg, msg);
 }
 
 int luaL_argerror_old(lua_State *L, int numarg, const char *extramsg) {
