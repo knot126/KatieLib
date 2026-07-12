@@ -16,6 +16,7 @@ char *gPackageName;
 typedef const char *(*ModuleInitFunc)(void);
 
 /* Sub-mod init functions */
+const char *KNInitLuaUpgrade(void);
 const char *KNInitLua(void);
 const char *KNDatabaseInit(void);
 const char *KNAntitamperInit(void);
@@ -23,6 +24,7 @@ const char *KNOverlayInit(void);
 const char *KNInitShutdown(void);
 
 ModuleInitFunc submod_init_functions[] = {
+	KNInitLuaUpgrade,
 	KNInitLua,
 	KNDatabaseInit,
 	KNAntitamperInit,
