@@ -11,6 +11,10 @@
 #include <limits.h>
 #include <stddef.h>
 
+#ifndef LLONG_MAX
+#define LLONG_MAX 0x7fffffffffffffff
+#endif
+
 
 /*
 ** ===================================================================

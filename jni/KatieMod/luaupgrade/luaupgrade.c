@@ -11,6 +11,8 @@
 #include "../util.h"
 #include "../builtin/lua_utils.h"
 
+#define USE_LUA_53 1
+
 void *liblua;
 
 typedef unsigned long long lua_Unsigned;
@@ -24,7 +26,16 @@ typedef unsigned long long lua_Unsigned;
 #define LUA_REGISTRYINDEX_NEW	LUAI_FIRSTPSEUDOIDX
 #define lua_upvalueindex_new(i)	(LUA_REGISTRYINDEX_NEW - (i))
 
+#ifdef USE_LUA_53
+#define LUA_KCONTEXT	intptr_t
+typedef LUA_KCONTEXT lua_KContext;
+typedef int (*lua_KFunction) (lua_State *L, int status, lua_KContext ctx);
+#define lua_pop_new(L,n)		lua_settop_new(L, -(n)-1)
+
+#include "lua53_loader.c"
+#else
 #include "lua52_loader.c"
+#endif
 
 // int called_times = 0;
 
@@ -79,15 +90,29 @@ void lua_pushvalue_old(lua_State *L, int idx) {
 }
 
 void lua_remove_old(lua_State *L, int idx) {
+#ifdef USE_LUA_53
+	lua_rotate_new(L, idx, -1); // 5.3 this became a macro
+	lua_pop_new(L, 1);
+#else
 	lua_remove_new(L, idx);
+#endif
 }
 
 void lua_insert_old(lua_State *L, int idx) {
+#ifdef USE_LUA_53
+	lua_rotate_new(L, idx, 1); // 5.3 this became a macro
+#else
 	lua_insert_new(L, idx);
+#endif
 }
 
 void lua_replace_old(lua_State *L, int idx) {
+#ifdef USE_LUA_53
+	lua_copy_new(L, -1, idx); // 5.3 this became a macro
+	lua_pop_new(L, 1);
+#else
 	lua_replace_new(L, idx);
+#endif
 }
 
 int lua_checkstack_old(lua_State *L, int sz) {
@@ -309,7 +334,11 @@ int lua_load_old(lua_State *L, lua_Reader reader, void *dt, const char *chunknam
 }
 
 int lua_dump_old(lua_State *L, lua_Writer writer, void *data) {
+#ifdef USE_LUA_53
+	return lua_dump_new(L, writer, data, 0); // 5.3
+#else
 	return lua_dump_new(L, writer, data);
+#endif
 }
 
 int lua_yield_old(lua_State *L, int nresults) {
@@ -378,7 +407,12 @@ const char *lua_setupvalue_old(lua_State *L, int funcindex, int n) {
 }
 
 int lua_sethook_old(lua_State *L, lua_Hook func, int mask, int count) {
+#ifdef USE_LUA_53
+	lua_sethook_new(L, func, mask, count); // 5.3 return value was removed, it was always 1 anyway
+	return 1;
+#else
 	return lua_sethook_new(L, func, mask, count);
+#endif
 }
 
 lua_Hook lua_gethook_old(lua_State *L) {
