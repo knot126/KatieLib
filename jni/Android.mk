@@ -216,6 +216,7 @@ LOCAL_SRC_FILES += lua/src/lapi.c \
 	lua/src/ltablib.c \
 	lua/src/ltm.c \
 	lua/src/lundump.c \
+	lua/src/lutf8lib.c \
 	lua/src/lvm.c \
 	lua/src/lzio.c
 LOCAL_C_INCLUDES += jni/lua
