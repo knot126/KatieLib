@@ -431,6 +431,7 @@ void luaL_openlibs_old(lua_State *L) {
 
 void luaL_openlib_old(lua_State *L, const char *libname, const luaL_Reg *l, int nup) {
 	// 5.2 Removed -- TODO find alternative? not sure if its needed tho
+	luaL_error_new(L, "luaL_openlib is not available");
 }
 
 void luaL_register_old(lua_State *L, const char *libname, const luaL_Reg *l) {
