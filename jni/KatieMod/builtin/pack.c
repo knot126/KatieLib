@@ -33,11 +33,8 @@ int knPack(lua_State *script) {
 			luaL_error(script, "Invalid pack type string: '%s'", typename);
 		}
 	}
-	else if (atype == LUA_TNIL || atype == LUA_TNONE) {
-		luaL_error(script, "Cannot pack nil (or none) value; you probably forgot to pass any arguments");
-	}
 	else {
-		luaL_error(script, "Pack type expects a string, not a value");
+		luaL_error(script, "The first argument should be a string");
 	}
 	
 	return 1;
