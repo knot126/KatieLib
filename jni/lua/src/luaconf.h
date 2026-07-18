@@ -136,6 +136,11 @@
 #endif				/* } */
 
 
+// IMPORTANT: NEED this for smash hit
+#ifdef __arm__
+#define LUA_INT_TYPE    LUA_INT_LONG
+#endif
+
 /*
 ** default configuration for 64-bit Lua ('long long' and 'double')
 */
