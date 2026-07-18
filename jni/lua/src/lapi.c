@@ -29,6 +29,7 @@
 #include "lundump.h"
 #include "lvm.h"
 
+#include <android/log.h>
 
 
 const char lua_ident[] =
@@ -356,6 +357,7 @@ LUA_API lua_Number lua_tonumberx (lua_State *L, int idx, int *pisnum) {
 LUA_API lua_Integer lua_tointegerx (lua_State *L, int idx, int *pisnum) {
   lua_Integer res;
   const TValue *o = index2addr(L, idx);
+  __android_log_print(ANDROID_LOG_INFO, "smashhit", "LUA TO   tt=%d, value.i=%lld", o->tt_, o->value_.i);
   int isnum = tointeger(o, &res);
   if (!isnum)
     res = 0;  /* call to 'tointeger' may change 'n' even if it fails */
@@ -462,10 +464,11 @@ LUA_API void lua_pushnumber (lua_State *L, lua_Number n) {
   lua_unlock(L);
 }
 
-
 LUA_API void lua_pushinteger (lua_State *L, lua_Integer n) {
   lua_lock(L);
+  __android_log_print(ANDROID_LOG_INFO, "smashhit", "LUA PUSH(1) n=%lld", n);
   setivalue(L->top, n);
+  __android_log_print(ANDROID_LOG_INFO, "smashhit", "LUA PUSH(2) tt=%d, value.i=%lld", L->top->tt_, L->top->value_.i);
   api_incr_top(L);
   lua_unlock(L);
 }

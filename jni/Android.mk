@@ -23,6 +23,7 @@ LOCAL_SRC_FILES := KatieMod/mod_info.c \
 	KatieMod/builtin/asset.c \
 	KatieMod/builtin/script.c \
 	KatieMod/builtin/log.c \
+	KatieMod/builtin/debuglog.c \
 	KatieMod/builtin/patching.c \
 	KatieMod/builtin/http.c \
 	KatieMod/builtin/string.c \
@@ -220,5 +221,7 @@ LOCAL_SRC_FILES += lua/src/lapi.c \
 	lua/src/lvm.c \
 	lua/src/lzio.c
 LOCAL_C_INCLUDES += jni/lua
+
+LOCAL_LDLIBS     := -llog
 
 include $(BUILD_SHARED_LIBRARY)
