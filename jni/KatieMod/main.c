@@ -18,7 +18,6 @@ typedef const char *(*ModuleInitFunc)(void);
 /* Sub-mod init functions */
 const char *KNInitLuaUpgrade(void);
 const char *KNInitLua(void);
-const char *KNInitDebugLog(void);
 const char *KNDatabaseInit(void);
 const char *KNAntitamperInit(void);
 const char *KNOverlayInit(void);
