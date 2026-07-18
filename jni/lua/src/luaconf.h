@@ -77,9 +77,9 @@
 ** C89 ('long' and 'double'); Windows always has '__int64', so it does
 ** not need to use this case.
 */
-// #if defined(LUA_USE_C89) && !defined(LUA_USE_WINDOWS)
-// #define LUA_C89_NUMBERS
-// #endif
+#if defined(LUA_USE_C89) && !defined(LUA_USE_WINDOWS)
+#define LUA_C89_NUMBERS
+#endif
 
 
 
@@ -115,29 +115,26 @@
 #define LUA_FLOAT_DOUBLE	2
 #define LUA_FLOAT_LONGDOUBLE	3
 
-// #if defined(LUA_32BITS)		/* { */
-// /*
-// ** 32-bit integers and 'float'
-// */
-// #if LUAI_BITSINT >= 32  /* use 'int' if big enough */
-// #define LUA_INT_TYPE	LUA_INT_INT
-// #else  /* otherwise use 'long' */
-// #define LUA_INT_TYPE	LUA_INT_LONG
-// #endif
-// #define LUA_FLOAT_TYPE	LUA_FLOAT_FLOAT
-// 
-// #elif defined(LUA_C89_NUMBERS)	/* }{ */
-// /*
-// ** largest types available for C89 ('long' and 'double')
-// */
-// #define LUA_INT_TYPE	LUA_INT_LONG
-// #define LUA_FLOAT_TYPE	LUA_FLOAT_DOUBLE
-// 
-// #endif				/* } */
-
-#ifdef __arm__
+#if defined(LUA_32BITS)		/* { */
+/*
+** 32-bit integers and 'float'
+*/
+#if LUAI_BITSINT >= 32  /* use 'int' if big enough */
+#define LUA_INT_TYPE	LUA_INT_INT
+#else  /* otherwise use 'long' */
 #define LUA_INT_TYPE	LUA_INT_LONG
 #endif
+#define LUA_FLOAT_TYPE	LUA_FLOAT_FLOAT
+
+#elif defined(LUA_C89_NUMBERS)	/* }{ */
+/*
+** largest types available for C89 ('long' and 'double')
+*/
+#define LUA_INT_TYPE	LUA_INT_LONG
+#define LUA_FLOAT_TYPE	LUA_FLOAT_DOUBLE
+
+#endif				/* } */
+
 
 /*
 ** default configuration for 64-bit Lua ('long long' and 'double')
@@ -540,8 +537,6 @@
 #define LUA_UNSIGNED		unsigned LUAI_UACINT
 
 
-
-
 /* now the variable definitions */
 
 #if LUA_INT_TYPE == LUA_INT_INT		/* { int */
@@ -593,9 +588,6 @@
 #error "numeric integer type not defined"
 
 #endif				/* } */
-
-
-
 
 /* }================================================================== */
 
