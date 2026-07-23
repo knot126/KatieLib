@@ -178,9 +178,9 @@ int knReload(lua_State *script) {
 
 void (*Game_loadTemplates)(Game *this);
 
-int knLoadTemplates(lua_State *script) {
+int knReloadTemplates(lua_State *script) {
 	/**
-	 * (bool) success = knLoadTemplates()
+	 * (bool) success = knReloadTemplates()
 	 * 
 	 * Reload templates.
 	 */
@@ -205,9 +205,9 @@ void (*Gfx_destruct)(Gfx *this);
 void (*Gfx_load1)(Gfx *this, ResMan *resMan);
 void (*Gfx_load2)(Gfx *this, ResMan *resMan);
 
-int knLoadGfx(lua_State *script) {
+int knReloadGfx(lua_State *script) {
 	/**
-	 * knLoadGfx()
+	 * knReloadGfx()
 	 * 
 	 * Reload all of the game's hardcoded shaders and textures.
 	 */
@@ -227,6 +227,22 @@ int knLoadGfx(lua_State *script) {
 	Gfx_construct(gGame->gfx, gGame->resman);
 	Gfx_load1(gGame->gfx, gGame->resman);
 	Gfx_load2(gGame->gfx, gGame->resman);
+	
+	return 0;
+}
+
+void (*Player_load)(Player *this);
+
+int knReloadPlayer(lua_State *script) {
+	/**
+	 * Reload the save file
+	 */
+	
+	if (!Player_load) {
+		Player_load = YipLookupSymbol("_ZN6Player4loadEv");
+	}
+	
+	Player_load(gGame->player);
 	
 	return 0;
 }
@@ -322,8 +338,9 @@ int knEnableGamectl(lua_State *script) {
 	
 	// Reloading
 	knRegisterFunc(script, knReload);
-	knRegisterFunc(script, knLoadTemplates);
-	knRegisterFunc(script, knLoadGfx);
+	knRegisterFunc(script, knReloadTemplates);
+	knRegisterFunc(script, knReloadGfx);
+	knRegisterFunc(script, knReloadPlayer);
 	
 	// Level methods
 	knRegisterFunc(script, knLevelHitSomething);
