@@ -5,6 +5,37 @@
 #include "lua_utils.h"
 #include "../util.h"
 
+static void *kt_checkaddr(lua_State *script, int idx) {
+	void *addr = NULL;
+	
+	switch (lua_type(script, idx)) {
+		case LUA_TSTRING: {
+			addr = YipLookupSymbol(lua_tostring(script, idx));
+			break;
+		}
+		case LUA_TNUMBER: {
+			Leaf *leaf = YipGetLeafInstance();
+			addr = LeafGetRealAddr(leaf, lua_tointeger(script, idx));
+			break;
+		}
+		case LUA_TLIGHTUSERDATA: {
+			addr = lua_touserdata(script, idx);
+			break;
+		}
+		default: {
+			luaL_error(script, "Invalid type of address specification");
+			return NULL;
+		}
+	}
+	
+	if (!addr) {
+		luaL_error(script, "The address specification resulted in an invalid pointer.");
+		return NULL;
+	}
+	
+	return addr;
+}
+
 int knPatch(lua_State *script) {
 	/**
 	 * (string) originalData = knPatch(addressSpec, (string) data)
@@ -14,30 +45,7 @@ int knPatch(lua_State *script) {
 		return luaL_error(script, "Not enough args");
 	}
 	
-	void *addr = NULL;
-	
-	switch (lua_type(script, 1)) {
-		case LUA_TSTRING: {
-			addr = YipLookupSymbol(lua_tostring(script, 1));
-			break;
-		}
-		case LUA_TNUMBER: {
-			Leaf *leaf = YipGetLeafInstance();
-			addr = LeafGetRealAddr(leaf, lua_tointeger(script, 1));
-			break;
-		}
-		case LUA_TLIGHTUSERDATA: {
-			addr = lua_touserdata(script, 1);
-			break;
-		}
-		default: {
-			return luaL_error(script, "Invalid address specification");
-		}
-	}
-	
-	if (!addr) {
-		return luaL_error(script, "Tried to patch a NULL address! (This is probably because a symbol lookup failed or the virtual address doesn't exist in the game binary)");
-	}
+	void *addr = kt_checkaddr(script, 1);
 	
 	if (lua_type(script, 2) != LUA_TSTRING) {
 		return luaL_error(script, "Data is not a string: use knPack() to convert numbers first");
@@ -65,26 +73,7 @@ int knPeek(lua_State *script) {
 		return luaL_error(script, "Not enough args");
 	}
 	
-	void *addr = NULL;
-	
-	switch (lua_type(script, 1)) {
-		case LUA_TSTRING: {
-			addr = YipLookupSymbol(lua_tostring(script, 1));
-			break;
-		}
-		case LUA_TNUMBER: {
-			Leaf *leaf = YipGetLeafInstance();
-			addr = LeafGetRealAddr(leaf, lua_tointeger(script, 1));
-			break;
-		}
-		case LUA_TLIGHTUSERDATA: {
-			addr = lua_touserdata(script, 1);
-			break;
-		}
-		default: {
-			return luaL_error(script, "First argument must be a string (symbol), number (virtual address), or light userdata (raw address)");
-		}
-	}
+	void *addr = kt_checkaddr(script, 1);
 	
 	size_t size = lua_tointeger(script, 2);
 	
@@ -113,31 +102,7 @@ int knAddress(lua_State *script) {
 	 *     // Can imagine as: gGame->0x60->0x8bc
 	 */
 	
-	void *base = NULL;
-	
-	// Interpret base address
-	switch (lua_type(script, 1)) {
-		case LUA_TSTRING: {
-			base = YipLookupSymbol(lua_tostring(script, 1));
-			break;
-		}
-		case LUA_TNUMBER: {
-			Leaf *leaf = YipGetLeafInstance();
-			base = LeafGetRealAddr(leaf, lua_tointeger(script, 1));
-			break;
-		}
-		case LUA_TLIGHTUSERDATA: {
-			base = lua_touserdata(script, 1);
-			break;
-		}
-		default: {
-			return luaL_error(script, "Invalid type of base address");
-		}
-	}
-	
-	if (!base) {
-		return luaL_error(script, "Base address is NULL! For base symbols, check your spelling. For offsets into a binary, check that the virtual address exists within the binary itself.");
-	}
+	void *base = kt_checkaddr(script, 1);
 	
 	for (size_t i = 2; i <= lua_gettop(script); i++) {
 		base = *((void **)base) + lua_tointeger(script, i);
@@ -147,10 +112,30 @@ int knAddress(lua_State *script) {
 	return 1;
 }
 
+#include "patch_insert.c"
+
+int knInsertCode(lua_State *script) {
+	/**
+	 * knInsertCode(location: address, code: string): string
+	 * 
+	 */
+	
+	uint32_t *pc = kt_checkaddr(script, 1);
+	
+	size_t code_size;
+	const void *code = lua_tolstring(script, 2, &code_size);
+	
+	uint32_t *orig = kt_insert_code(pc, code, code_size);
+	
+	lua_pushlstring(script, (void *)orig, 4);
+	return 1;
+}
+
 int knEnablePatching(lua_State *script) {
 	knRegisterFunc(script, knPatch);
 	knRegisterFunc(script, knPeek);
 	knRegisterFunc(script, knAddress);
+	knRegisterFunc(script, knInsertCode);
 	
 	return 0;
 }
