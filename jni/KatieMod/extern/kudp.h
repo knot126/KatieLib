@@ -1,3 +1,7 @@
+/**
+ * Knot's UDP library - a non-blocking UDP library with a clean interface
+ */
+
 #ifndef _KUDP_INCLUDE_
 #define _KUDP_INCLUDE_
 
@@ -21,9 +25,9 @@ typedef struct kudp_socket {
 	kudp_buffer buffer;
 } kudp_socket;
 
-kudp_socket *kudp_connect(const char *address, unsigned short port, bool use_connect);
+bool kudp_open(kudp_socket *self, const char *address, unsigned short port, bool use_connect);
 kudp_buffer *kudp_recieve(kudp_socket *self);
-bool kudp_send(kudp_socket *self, kudp_buffer *buffer);
+bool kudp_send(kudp_socket *self, const void *data, size_t size);
 void kudp_close(kudp_socket *self);
 
 #endif
@@ -31,16 +35,10 @@ void kudp_close(kudp_socket *self);
 #ifdef KUDP_IMPLEMENTATION
 #undef KUDP_IMPLEMENTATION
 
-kudp_socket *kudp_connect(const char *address, unsigned short port, bool use_connect) {
+bool kudp_open(kudp_socket *self, const char *address, unsigned short port, bool use_connect) {
 	char portstr[6];
 	
 	snprintf(portstr, sizeof portstr, "%hu", port);
-	
-	kudp_socket *self = malloc(sizeof *self);
-	
-	if (!self) {
-		return self;
-	}
 	
 	struct addrinfo hints = {
 		.ai_family = AF_UNSPEC,
@@ -52,38 +50,43 @@ kudp_socket *kudp_connect(const char *address, unsigned short port, bool use_con
 	struct addrinfo *results = NULL;
 	
 	if (getaddrinfo(address, portstr, &hints, &results) || !results) {
-		free(self);
-		return NULL;
+		return false;
 	}
 	
 	// Open socket
 	self->fd = socket(results->ai_family, results->ai_socktype, results->ai_protocol);
 	
 	if (self->fd == -1) {
-		free(self); freeaddrinfo(results);
-		return NULL;
+		freeaddrinfo(results);
+		return false;
 	}
 	
 	// Set send and recieve address
 	if (use_connect) {
 		if (connect(self->fd, results->ai_addr, results->ai_addrlen)) {
-			free(self); freeaddrinfo(results);
-			return NULL;
+			freeaddrinfo(results);
+			close(self->fd);
+			return false;
 		}
 	}
 	// Set recieve address only
 	else {
 		if (bind(self->fd, results->ai_addr, results->ai_addrlen)) {
-			free(self); freeaddrinfo(results);
-			return NULL;
+			freeaddrinfo(results);
+			close(self->fd);
+			return false;
 		}
 	}
 	
 	freeaddrinfo(results);
-	return self;
+	return true;
 }
 
 kudp_buffer *kudp_recieve(kudp_socket *self) {
+	if (self->fd < 0) {
+		return NULL;
+	}
+	
 	ssize_t recvsize = recv(self->fd, self->buffer.data, KUDP_MAX_SIZE, MSG_DONTWAIT);
 	
 	if (recvsize == -1) {
@@ -95,16 +98,24 @@ kudp_buffer *kudp_recieve(kudp_socket *self) {
 	return &self->buffer;
 }
 
-bool kudp_send(kudp_socket *self, kudp_buffer *buffer) {
-	ssize_t nsent = send(self->fd, buffer->data, buffer->size, MSG_DONTWAIT);
+bool kudp_send(kudp_socket *self, const void *data, size_t size) {
+	if (self->fd < 0) {
+		return false;
+	}
 	
-	return nsent == buffer->size;
+	ssize_t nsent = send(self->fd, data, size, MSG_DONTWAIT);
+	
+	return nsent == size;
 }
 
 void kudp_close(kudp_socket *self) {
+	if (self->fd < 0) {
+		return;
+	}
+	
 	shutdown(self->fd, SHUT_RDWR);
 	close(self->fd);
-	free(self);
+	self->fd = -1;
 }
 
 #endif
