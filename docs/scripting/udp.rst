@@ -4,29 +4,33 @@ UDP Sockets
 
 KatieLib exposes a very basic, async implementation of UDP.
 
-.. class:: KnUdpSocket
+.. class:: KnUdpSocket([address: string, port: integer]): KnUdpSocket
+      
+   Create a new UDP socket which is optionally bound to the given address and
+   port.
    
-   .. function:: KnUdpSocket(address: string, port: integer, server: boolean): KnUdpSocket
-      
-      Create a new UDP socket which is associated with the given address and
-      port. The address must currently be an IP address (no hostname).
-      The port can be any valid UDP port the game has permission to open.
-      
-      If ``server`` is **true**, then the :c:expr:`bind()` syscall will be
-      used instead of :c:expr:`connect()` when setting up the socket. You
-      probably want to use :c:expr:`connect()`. Note that when running in server
-      mode it's not currently possible to reply as the API lacks a way to send
-      to a specific address currently.
+   Binding a UDP socket to an address and port is required for reciving
+   messages, but not for sending them.
    
-   .. method:: send(data: string): boolean
+   .. method:: send(data: string, address: string, port: integer): boolean
       
-      Send a datagram with the given data to the address associated with this
-      port. Returns a boolean indicating success.
+      Send a datagram with the given data to the address and port. Returns a
+      boolean indicating success.
    
-   .. method:: recieve(): string | nil
+   .. method:: recieve(): string, string, integer | nil, nil, nil
       
-      Recieve a datagram from the associated address. Returns the data as a
-      string or **nil** if there are no more datagrams.
+      Get the next datagram in the queue, if there is one.
+      
+      If a datagram is available, this returns three values: the data of the
+      datagram itself, the address that sent the datagram, and the port it came
+      from.
+      
+      If there are no more datagrams or there is an error, this returns three
+      nil values.
+   
+   .. method:: close()
+      
+      Closes the UDP socket and frees resources
    
    .. data:: fd: integer
       

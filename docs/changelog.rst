@@ -9,9 +9,10 @@ Release 22
 
 - Update YipLoader version to 0.1.1
 - Added :func:`knInsertCode` for "inserting" assembly code
+- Added :func:`KnUdpSocket`
+- Added :func:`knReloadPlayer`
 - Renamed ``knLoadGfx()`` to :func:`knReloadGfx`
 - Renamed ``knLoadTemplates()`` to :func:`knReloadTemplates`
-- Added :func:`knReloadPlayer()`
 - Deprecated Shaders module, will be removed in r23
 
 Release 21
