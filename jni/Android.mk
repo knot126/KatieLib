@@ -38,6 +38,7 @@ LOCAL_SRC_FILES := KatieMod/mod_info.c \
 	KatieMod/builtin/isc.c \
 	KatieMod/builtin/shutdown.c \
 	KatieMod/builtin/tick.c \
+	KatieMod/builtin/udp.c \
 	KatieMod/lua/loader.c \
 	KatieMod/luaupgrade/luaupgrade.c \
 	KatieMod/extern/miniz.c
