@@ -132,12 +132,12 @@ bool gDbTransactionMode;
 
 static bool WriteInt(FILE *file, uint32_t data) {
 	// Return true on error
-	return fwrite(&data, sizeof data, 1, file) == 0;
+	return fwrite(&data, sizeof data, 1, file) != sizeof(uint32_t);
 }
 
 static bool WriteData(FILE *file, size_t size, const void *buffer) {
 	// Return true on error
-	return fwrite(buffer, size, 1, file) == 0;
+	return fwrite(buffer, size, 1, file) != size;
 }
 
 static uint32_t ReadInt(FILE *file) {
