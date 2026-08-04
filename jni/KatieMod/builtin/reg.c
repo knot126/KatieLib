@@ -132,12 +132,12 @@ bool gDbTransactionMode;
 
 static bool WriteInt(FILE *file, uint32_t data) {
 	// Return true on error
-	return fwrite(&data, sizeof data, 1, file) != sizeof(uint32_t);
+	return fwrite(&data, sizeof data, 1, file) != 1;
 }
 
 static bool WriteData(FILE *file, size_t size, const void *buffer) {
 	// Return true on error
-	return fwrite(buffer, size, 1, file) != size;
+	return (fwrite(buffer, size, 1, file) != 1) && size;
 }
 
 static uint32_t ReadInt(FILE *file) {
@@ -203,6 +203,7 @@ static bool SaveDict(KH_Dict *dict, const char *path) {
 	}
 	
 	// Close the file
+	fflush(file);
 	fclose(file);
 	
 	// If no error occured, replace the database file with the new one. Otherwise,
