@@ -63,6 +63,11 @@ int knGetExternalDataPath(lua_State *script) {
 	return 1;
 }
 
+int knAccquireMulticastLock(lua_State *script) {
+	lua_pushboolean(script, KNAccquireMulticastLock());
+	return 1;
+}
+
 int knInclude(lua_State *script) {
 	/**
 	 * Include a lua script from the APK assets directory.
@@ -105,6 +110,7 @@ int knEnableSystem(lua_State *script) {
 	knRegisterFunc(script, knGetDeviceSdk);
 	knRegisterFunc(script, knGetInternalDataPath);
 	knRegisterFunc(script, knGetExternalDataPath);
+	knRegisterFunc(script, knAccquireMulticastLock);
 	knRegisterFunc(script, knInclude);
 	
 	return 0;

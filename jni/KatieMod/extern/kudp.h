@@ -9,6 +9,7 @@
 #include <sys/socket.h>
 #include <netinet/ip.h>
 #include <arpa/inet.h>
+#include <unistd.h>
 #include <netdb.h>
 #include <stdlib.h>
 #include <string.h>
@@ -48,7 +49,9 @@ static inline void kudp_unparseaddr(const struct sockaddr *sa, char address[KUDP
 	// struct sockaddr -> string, short
 	
 	// Convert IP address to string
-	if (!inet_ntop(sa->sa_family, sa, address, KUDP_ADDR_LEN)) {
+	void *ba = sa->sa_family == AF_INET6 ? (void*)&((struct sockaddr_in6 *) sa)->sin6_addr : (void*)&((struct sockaddr_in *) sa)->sin_addr;
+	
+	if (!inet_ntop(sa->sa_family, ba, address, KUDP_ADDR_LEN)) {
 		address[0] = '\0';
 	}
 	
@@ -77,12 +80,12 @@ static inline bool kudp_parseaddr(struct sockaddr *sa, const char *address, cons
 	
 	if (strchr(address, ':')) {
 		sa->sa_family = AF_INET6;
-		if (!inet_pton(AF_INET6, address, sa)) { return false; }
+		if (!inet_pton(AF_INET6, address, &((struct sockaddr_in6 *) sa)->sin6_addr)) { return false; }
 		((struct sockaddr_in6 *) sa)->sin6_port = htons(port);
 	}
 	else {
 		sa->sa_family = AF_INET;
-		if (!inet_pton(AF_INET, address, sa)) { return false; }
+		if (!inet_pton(AF_INET, address, &((struct sockaddr_in *) sa)->sin_addr)) { return false; }
 		((struct sockaddr_in *) sa)->sin_port = htons(port);
 	}
 	
@@ -94,60 +97,73 @@ bool kudp_open(kudp_socket *self, const char *address, unsigned short port) {
 	
 	snprintf(portstr, sizeof portstr, "%hu", port);
 	
-	struct addrinfo hints = {
-		.ai_family = AF_UNSPEC,
-		.ai_socktype = SOCK_DGRAM,
-		.ai_protocol = 0,
-		.ai_flags = AI_ADDRCONFIG | AI_NUMERICHOST | AI_NUMERICSERV,
-	};
+	// struct addrinfo hints = {
+	// 	.ai_family = AF_UNSPEC,
+	// 	.ai_socktype = SOCK_DGRAM,
+	// 	.ai_protocol = 0,
+	// 	.ai_flags = AI_ADDRCONFIG | AI_NUMERICHOST | AI_NUMERICSERV,
+	// };
 	
-	struct addrinfo *results = NULL;
+	// struct addrinfo *results = NULL;
 	
-	if (getaddrinfo(address, portstr, &hints, &results) || !results) {
+	// if (getaddrinfo(address, portstr, &hints, &results) || !results) {
+	// 	return false;
+	// }
+	
+	struct sockaddr sa;
+	
+	if (!kudp_parseaddr(&sa, address, port)) {
+		// printf("kudp_parseaddr fail\n");
 		return false;
 	}
 	
 	// Open socket
-	self->fd = socket(results->ai_family, results->ai_socktype, results->ai_protocol);
+	// self->fd = socket(results->ai_family, results->ai_socktype, results->ai_protocol);
+	self->fd = socket(sa.sa_family, SOCK_DGRAM, 0);
 	
 	if (self->fd == -1) {
-		freeaddrinfo(results);
+		// freeaddrinfo(results);
+		// printf("socket fail errno=%s\n", strerror(errno));
 		return false;
 	}
 	
 	// Enable broadcast. This is really stupid IMO
-	const int broadcast = 1;
-	setsockopt(self->fd, SOL_SOCKET, SO_BROADCAST, &broadcast, sizeof broadcast);
+	// const int broadcast = 1;
+	// setsockopt(self->fd, SOL_SOCKET, SO_BROADCAST, &broadcast, sizeof broadcast);
 	
 	// If address != NULL, this is a server and we should bind to the given
 	// address
 	if (address) {
-		if (bind(self->fd, results->ai_addr, results->ai_addrlen)) {
-			freeaddrinfo(results);
+		// if (bind(self->fd, results->ai_addr, results->ai_addrlen)) {
+		if (bind(self->fd, &sa, sizeof sa)) {
+			// freeaddrinfo(results);
 			close(self->fd);
 			return false;
 		}
 	}
 	
-	freeaddrinfo(results);
+	// freeaddrinfo(results);
 	return true;
 }
 
 kudp_buffer *kudp_recieve(kudp_socket *self) {
 	if (self->fd < 0) {
+		// LogW("self->fd < 0");
 		return NULL;
 	}
 	
 	struct sockaddr sa;
 	socklen_t sa_size = sizeof sa;
+	// LogW("recvfrom(%d, self->buffer.data, %d, MSG_DONTWAIT, &sa, &sa_size)", self->fd, KUDP_MAX_SIZE);
 	ssize_t nrecv = recvfrom(self->fd, self->buffer.data, KUDP_MAX_SIZE, MSG_DONTWAIT, &sa, &sa_size);
 	
 	if (nrecv == -1) {
+		// if (errno != EAGAIN) LogW("nrecv == -1, errno=%s", strerror(errno));
 		return NULL;
 	}
 	
 	self->buffer.size = nrecv;
-	kudp_unparseaddr(&sa, self->buffer.address, &self->buffer.port); // parse address
+	kudp_unparseaddr(&sa, self->buffer.address, &self->buffer.port); // convert address to output format
 	
 	return &self->buffer;
 }

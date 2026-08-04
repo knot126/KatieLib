@@ -32,7 +32,10 @@ int KnUdpSocket(lua_State *L) {
 		lua_setfield(L, -2, "__gc");
 	}
 	
-	lua_setmetatable(L, -1);
+	// okay i did a bug and this was -1 so the metatable was getting set to
+	// its own metatable
+	// pro player de metatable
+	lua_setmetatable(L, -2);
 	
 	return 1;
 }
@@ -81,7 +84,7 @@ int knUdpSocketRecieve(lua_State *L) {
 		lua_pushnil(L);
 	}
 	
-	return 1;
+	return 3;
 }
 
 int knUdpSocketClose(lua_State *L) {

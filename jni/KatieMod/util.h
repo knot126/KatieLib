@@ -78,6 +78,7 @@ bool KNPreformInBackground(PthreadCallbackFunc func, void *arg);
 float KNGetRefreshRate(void);
 bool KNGetAppVersion(char *buffer, size_t maxSize);
 char *KNGetPackageName(void);
+bool KNAccquireMulticastLock(void);
 
 #define knRegisterFunc(SCRIPT, NAME) lua_register(SCRIPT, #NAME, NAME)
 #define knLuaPushEnum(SCRIPT, ENUM_NAME) lua_pushinteger(SCRIPT, ENUM_NAME); lua_setglobal(SCRIPT, #ENUM_NAME);
