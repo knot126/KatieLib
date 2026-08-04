@@ -119,6 +119,14 @@ static jfieldID jni_get_field_id(JNIEnv *jni, const char *className, const char 
 	return theField;
 }
 
+#define DO_JNI_STUFF JavaVM *vm = gApp->activity->vm; \
+	JNIEnv *jni = NULL;\
+	\
+	if ((*vm)->GetEnv(vm, (void **)&jni, JNI_VERSION_1_6) != JNI_OK) {\
+		LogF("Getting JNI env didn't went ok");\
+		abort();\
+	}
+
 float KNGetRefreshRate(void) {
 	/**
 	 * Get the default display's native framerate.
@@ -247,4 +255,55 @@ char *KNGetPackageName(void) {
 	(*jni)->ReleaseStringUTFChars(jni, packageName, packageNameUtf);
 	
 	return packageNameUtfOwned;
+}
+
+bool KNAccquireMulticastLock(void) {
+	/**
+	 * Accquire a wifi multicast lock which is needed for sending and reciving
+	 * broadcast messages (used by the test client to autodiscover server).
+	 * 
+	 * SEE: https://lknuth.dev/writings/udp_multicast_on_android/
+	 */
+	
+	DO_JNI_STUFF;
+	
+	jobject activity = gApp->activity->clazz;
+	
+	// Object getSystemService(String name)
+	jmethodID getSystemService = jni_get_method_id(jni, "android/app/NativeActivity", "getSystemService", "(Ljava/lang/String;)Ljava/lang/Object;");
+	
+	// "wifi"
+	jstring wifi = (*jni)->NewStringUTF(jni, "wifi");
+	
+	JNI_EXCEPTION_ABORT(jni, "pending exception after creating 'wifi' string");
+	
+	// getSystemService("wifi")
+	jobject wifiService = (*jni)->CallObjectMethod(jni, activity, getSystemService, wifi);
+	
+	JNI_EXCEPTION_ABORT(jni, "pending exception after activity.getSystemService('wifi')");
+	
+	if (!wifiService) { // todo whatever null check actually needs to be done here
+		return false;
+	}
+	
+	// Method ID for createMulticastLock
+	jmethodID createMulticastLock = jni_get_method_id(jni, "android/net/wifi/WifiManager", "createMulticastLock", "(Ljava/lang/String;)Landroid/net/wifi/WifiManager$MulticastLock;");
+	
+	// "katielib"
+	jstring katielib = (*jni)->NewStringUTF(jni, "KatieLib");
+	
+	// .createMulticastLock('KatieLib')
+	jobject multicastLock = (*jni)->CallObjectMethod(jni, wifiService, createMulticastLock, katielib);
+	
+	JNI_EXCEPTION_ABORT(jni, "pending exception after wifiService.createMulticastLock('KatieLib')");
+	
+	// Method ID for WifiManager.MulticastLock#acquire
+	jmethodID acquire = jni_get_method_id(jni, "android/net/wifi/WifiManager$MulticastLock", "acquire", "()V");
+	
+	// .acquire()
+	(*jni)->CallVoidMethod(jni, multicastLock, acquire);
+	
+	JNI_EXCEPTION_ABORT(jni, "pending exception after multicastLock.acquire()");
+	
+	return true;
 }
