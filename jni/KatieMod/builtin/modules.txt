@@ -9,7 +9,6 @@ Properties smashhit grannysmith
 File smashhit grannysmith
 Gamectl smashhit
 Overlay smashhit grannysmith
-Shaders smashhit grannysmith
 Input smashhit
 Draw smashhit
 Pack smashhit grannysmith
