@@ -10,12 +10,11 @@ enum {
 	KN_FILE_BIT = (1 << 8),
 	KN_GAMECTL_BIT = (1 << 9),
 	KN_OVERLAY_BIT = (1 << 10),
-	KN_SHADERS_BIT = (1 << 11),
-	KN_INPUT_BIT = (1 << 12),
-	KN_DRAW_BIT = (1 << 13),
-	KN_PACK_BIT = (1 << 14),
-	KN_ISC_BIT = (1 << 15),
-	KN_UDP_BIT = (1 << 16),
+	KN_INPUT_BIT = (1 << 11),
+	KN_DRAW_BIT = (1 << 12),
+	KN_PACK_BIT = (1 << 13),
+	KN_ISC_BIT = (1 << 14),
+	KN_UDP_BIT = (1 << 15),
 };
 
 #define KNSHIM_ENABLE() \
@@ -41,8 +40,6 @@ enum {
 	if ((gDisabledModules & KN_GAMECTL_BIT) == 0) { knEnableGamectl(script); }\
 	int knEnableOverlay(lua_State *script);\
 	if ((gDisabledModules & KN_OVERLAY_BIT) == 0) { knEnableOverlay(script); }\
-	int knEnableShaders(lua_State *script);\
-	if ((gDisabledModules & KN_SHADERS_BIT) == 0) { knEnableShaders(script); }\
 	int knEnableInput(lua_State *script);\
 	if ((gDisabledModules & KN_INPUT_BIT) == 0) { knEnableInput(script); }\
 	int knEnableDraw(lua_State *script);\
@@ -67,7 +64,6 @@ enum {
 	knLuaPushEnum(script, KN_FILE_BIT);\
 	knLuaPushEnum(script, KN_GAMECTL_BIT);\
 	knLuaPushEnum(script, KN_OVERLAY_BIT);\
-	knLuaPushEnum(script, KN_SHADERS_BIT);\
 	knLuaPushEnum(script, KN_INPUT_BIT);\
 	knLuaPushEnum(script, KN_DRAW_BIT);\
 	knLuaPushEnum(script, KN_PACK_BIT);\
