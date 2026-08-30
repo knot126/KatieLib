@@ -421,6 +421,15 @@ int knEnableOverlay(lua_State *L) {
  */
 bool (*QiFileInputStream_open)(QiFileInputStream *this, const char *path);
 
+static void katielib_remove_suffix(char * restrict str, const char * restrict suffix) {
+	const size_t str_len = strlen(str);
+	const size_t suffix_len = strlen(suffix);
+	
+	if (str_len >= suffix_len && !memcmp(str + str_len - suffix_len, suffix, suffix_len)) {
+		str[str_len - suffix_len] = '\0';
+	}
+}
+
 bool QiFileInputStream_open_hook(QiFileInputStream *this, const char *path) {
 	/**
 	 * Hook which sits between QiFileInputStream::open() calls and tries to open
@@ -431,15 +440,19 @@ bool QiFileInputStream_open_hook(QiFileInputStream *this, const char *path) {
 	strcpy(final_path, path);
 	
 	// If the file path has the .mp3 suffix, we remove it.
-	if (strlen(final_path) >= 4 && !strcmp(final_path + strlen(final_path) - 4, ".mp3")) {
-		final_path[strlen(final_path) - 4] = '\0';
-	}
+	// if (strlen(final_path) >= 4 && !strcmp(final_path + strlen(final_path) - 4, ".mp3")) {
+	// 	final_path[strlen(final_path) - 4] = '\0';
+	// }
+	katielib_remove_suffix(final_path, ".mp3");
 	
 	// LogI("Want to find: %s", final_path);
 	
 	if (KNOverlayLoad(this, final_path)) {
 		LogI("Found: %s", final_path);
 		return true;
+	}
+	else {
+		LogI("Not found: %s", final_path);
 	}
 	
 	// Try real assets dir if that doesn't work
