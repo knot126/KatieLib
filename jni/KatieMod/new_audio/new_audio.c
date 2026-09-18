@@ -20,7 +20,7 @@ typedef struct QiAudioDeviceAndroid {
 } QiAudioDeviceAndroid;
 
 // Stuff for loading AAudio dynamically
-extern void *gLibAndroid;
+void *gLibAAudio;
 
 aaudio_result_t (*pAAudio_createStreamBuilder)(AAudioStreamBuilder** builder);
 void (*pAAudioStreamBuilder_setSampleRate)(AAudioStreamBuilder* builder, int32_t sampleRate);
@@ -35,19 +35,23 @@ aaudio_result_t (*pAAudioStream_requestStart)(AAudioStream* stream);
 int32_t (*pAAudioStream_getSamplesPerFrame)(AAudioStream* stream);
 
 static void load_aaudio(void) {
-#define LOAD(SYM) p ## SYM = dlsym(gLibAndroid, #SYM);
-	LOAD(AAudio_createStreamBuilder)
-	LOAD(AAudioStreamBuilder_setSampleRate)
-	LOAD(AAudioStreamBuilder_setChannelCount)
-	LOAD(AAudioStreamBuilder_setFormat)
-	LOAD(AAudioStreamBuilder_setPerformanceMode)
-	LOAD(AAudioStreamBuilder_setDataCallback)
-	LOAD(AAudioStreamBuilder_openStream)
-	LOAD(AAudioStreamBuilder_delete)
-	LOAD(AAudioStream_close)
-	LOAD(AAudioStream_requestStart)
-	LOAD(AAudioStream_getSamplesPerFrame)
+	gLibAAudio = dlopen("libaaudio.so", RTLD_NOW | RTLD_GLOBAL);
+	
+	if (gLibAAudio) {
+#define LOAD(SYM) { p ## SYM = dlsym(gLibAAudio, #SYM); if (!p ## SYM) { LogW("Failed to load %s", #SYM); } }
+		LOAD(AAudio_createStreamBuilder)
+		LOAD(AAudioStreamBuilder_setSampleRate)
+		LOAD(AAudioStreamBuilder_setChannelCount)
+		LOAD(AAudioStreamBuilder_setFormat)
+		LOAD(AAudioStreamBuilder_setPerformanceMode)
+		LOAD(AAudioStreamBuilder_setDataCallback)
+		LOAD(AAudioStreamBuilder_openStream)
+		LOAD(AAudioStreamBuilder_delete)
+		LOAD(AAudioStream_close)
+		LOAD(AAudioStream_requestStart)
+		LOAD(AAudioStream_getSamplesPerFrame)
 #undef LOAD
+	}
 }
 
 // We need QiAudio::fillBuffer() to get audio data from callback
@@ -143,11 +147,13 @@ static void setEnabled(QiAudioDeviceAndroid *self, bool enabled) {
 const char *KNInitNewAudio(void) {
 	load_aaudio();
 	
-	QiAudio_fillBuffer = YipLookupSymbol("_ZN7QiAudio10fillBufferEPsi");
-	
-	YipHookFunction("_ZN19QiAudioDeviceOpenSl6attachEP7QiAudio", attach, true);
-	YipHookFunction("_ZN19QiAudioDeviceOpenSl6detachEv", detach, true);
-	YipHookFunction("_ZN19QiAudioDeviceOpenSl10setEnabledEb", setEnabled, true);
+	if (gLibAAudio) {
+		QiAudio_fillBuffer = YipLookupSymbol("_ZN7QiAudio10fillBufferEPsi");
+		
+		YipHookFunction("_ZN19QiAudioDeviceOpenSl6attachEP7QiAudio", attach, true);
+		YipHookFunction("_ZN19QiAudioDeviceOpenSl6detachEv", detach, true);
+		YipHookFunction("_ZN19QiAudioDeviceOpenSl10setEnabledEb", setEnabled, true);
+	}
 	
 	return NULL;
 }
