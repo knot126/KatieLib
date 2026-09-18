@@ -31,7 +31,6 @@ LOCAL_SRC_FILES := KatieMod/mod_info.c \
 	KatieMod/builtin/files.c \
 	KatieMod/builtin/gamectl_smashhit.c \
 	KatieMod/builtin/overlay.c \
-	KatieMod/builtin/shaders.c \
 	KatieMod/builtin/input.c \
 	KatieMod/builtin/draw.c \
 	KatieMod/builtin/pack.c \
