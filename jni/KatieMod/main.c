@@ -45,6 +45,7 @@ const char *kaite_init_globals(void) {
 	gApp = YipGetAndroidAppStruct();
 	gLeaf = YipGetLeafInstance();
 	gGameName = YipGetGameName();
+	char *KNGetPackageName(void);
 	gPackageName = KNGetPackageName();
 	
 	gLibAndroid = dlopen("libandroid.so", RTLD_NOW | RTLD_GLOBAL);

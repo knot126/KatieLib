@@ -3,7 +3,7 @@
 #include <android/log.h>
 
 #define HTTP_IMPLEMENTATION
-#define HTTP_LOG(...) __android_log_print(ANDROID_LOG_INFO, "knshim", __VA_ARGS__)
+#define HTTP_LOG(...) __android_log_print(ANDROID_LOG_INFO, "katielib", __VA_ARGS__)
 #include <netinet/in.h>
 #include "../extern/http.h"
 
