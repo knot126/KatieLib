@@ -23,6 +23,7 @@ const char *KNAntitamperInit(void);
 const char *KNOverlayInit(void);
 const char *KNInitShutdown(void);
 const char *KNInitTick(void);
+const char *KNInitNewAudio(void);
 
 ModuleInitFunc submod_init_functions[] = {
 	KNInitLuaUpgrade,
@@ -32,6 +33,7 @@ ModuleInitFunc submod_init_functions[] = {
 	KNOverlayInit,
 	KNInitShutdown,
 	// KNInitTick,
+	KNInitNewAudio,
 	NULL,
 };
 

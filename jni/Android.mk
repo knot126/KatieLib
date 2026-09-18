@@ -41,6 +41,7 @@ LOCAL_SRC_FILES := KatieMod/mod_info.c \
 	KatieMod/builtin/udp.c \
 	KatieMod/lua/loader.c \
 	KatieMod/luaupgrade/luaupgrade.c \
+	KatieMod/new_audio/new_audio.c \
 	KatieMod/extern/miniz.c
 
 # Link against any extra libraries you might need here

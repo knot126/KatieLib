@@ -19,6 +19,10 @@ typedef struct QiColor {
 	float r, g, b, a;
 } QiColor;
 
+typedef struct QiAudio {
+	// todo
+} QiAudio;
+
 #ifdef GRANNY
 #define QI_STRING_LOCAL_SIZE 16
 #else
