@@ -448,11 +448,11 @@ bool QiFileInputStream_open_hook(QiFileInputStream *this, const char *path) {
 	// LogI("Want to find: %s", final_path);
 	
 	if (KNOverlayLoad(this, final_path)) {
-		LogI("Found: %s", final_path);
+		// LogI("Found: %s", final_path);
 		return true;
 	}
 	else {
-		LogI("Not found: %s", final_path);
+		// LogI("Not found: %s", final_path);
 	}
 	
 	// Try real assets dir if that doesn't work
