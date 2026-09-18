@@ -38,7 +38,7 @@ static void load_aaudio(void) {
 	gLibAAudio = dlopen("libaaudio.so", RTLD_NOW | RTLD_GLOBAL);
 	
 	if (gLibAAudio) {
-#define LOAD(SYM) { p ## SYM = dlsym(gLibAAudio, #SYM); if (!p ## SYM) { LogW("Failed to load %s", #SYM); } }
+#define LOAD(SYM) { p ## SYM = dlsym(gLibAAudio, #SYM); /* if (!p ## SYM) { LogW("Failed to load %s", #SYM); } */ }
 		LOAD(AAudio_createStreamBuilder)
 		LOAD(AAudioStreamBuilder_setSampleRate)
 		LOAD(AAudioStreamBuilder_setChannelCount)
@@ -50,6 +50,7 @@ static void load_aaudio(void) {
 		LOAD(AAudioStream_close)
 		LOAD(AAudioStream_requestStart)
 		LOAD(AAudioStream_getSamplesPerFrame)
+		// LogI("AAudio loaded");
 #undef LOAD
 	}
 }
