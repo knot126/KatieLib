@@ -191,7 +191,8 @@ static int32_t onInputEventHook(struct android_app* app, AInputEvent* event) {
 		return 1;
 	}
 // #if 0
-	else if (type == AINPUT_EVENT_TYPE_MOTION && source == AINPUT_SOURCE_MOUSE) {
+	else if (type == AINPUT_EVENT_TYPE_MOTION &&
+		(source == AINPUT_SOURCE_MOUSE || source == AINPUT_SOURCE_MOUSE_RELATIVE)) {
 		const int32_t action = AMotionEvent_getAction(event) & AMOTION_EVENT_ACTION_MASK;
 		const int32_t pointer_index = (AMotionEvent_getAction(event) & AMOTION_EVENT_ACTION_POINTER_INDEX_MASK) >> 8;
 		// const int32_t action_button = AMotionEvent_getActionButton(event);
