@@ -21,6 +21,9 @@ bool (*QiInput_wasKeyReleased)(QiInput *this, int key);
 
 void (*QiInput_registerKeyDown)(QiInput *this, int key);
 void (*QiInput_registerKeyUp)(QiInput *this, int key);
+void (*QiInput_registerMousePos)(QiInput *this, int x, int y);
+void (*QiInput_registerButtonDown)(QiInput *this, int button);
+void (*QiInput_registerButtonUp)(QiInput *this, int button);
 
 int knGetTouchCount(lua_State *L) {
 	lua_pushinteger(L, QiInput_getTouchCount(gInput));
@@ -100,7 +103,7 @@ int knRegisterKeyUp(lua_State *L) {
 int32_t (*onInputEvent)(struct android_app* app, AInputEvent* event);
 
 static inline int mapKeyToChar(int32_t keyCode, int32_t meta) {
-	const bool shift = (meta & AMETA_SHIFT_ON);
+	const bool shift = (meta & AMETA_SHIFT_ON) == AMETA_SHIFT_ON;
 	
 	if (keyCode >= AKEYCODE_0 && keyCode <= AKEYCODE_9) {
 		return '0' + (keyCode - AKEYCODE_0);
@@ -110,27 +113,29 @@ static inline int mapKeyToChar(int32_t keyCode, int32_t meta) {
 	else if (keyCode >= AKEYCODE_A && keyCode <= AKEYCODE_Z) {
 		return (shift ? 'A' : 'a') + (keyCode - AKEYCODE_A);
 	}
-	else if (keyCode == AKEYCODE_COMMA)                      { return ','; }
-	else if (keyCode == AKEYCODE_PERIOD)                     { return '.'; }
+	else if (keyCode == AKEYCODE_COMMA)                      { return shift ? '<' : ','; }
+	else if (keyCode == AKEYCODE_PERIOD)                     { return shift ? '>' : '.'; }
 	else if (keyCode == AKEYCODE_SPACE)                      { return ' '; }
-	else if (keyCode == AKEYCODE_GRAVE)                      { return '`'; }
-	else if (keyCode == AKEYCODE_MINUS)                      { return '-'; }
-	else if (keyCode == AKEYCODE_EQUALS)                     { return '='; }
-	else if (keyCode == AKEYCODE_LEFT_BRACKET)               { return '['; }
-	else if (keyCode == AKEYCODE_RIGHT_BRACKET)              { return ']'; }
-	else if (keyCode == AKEYCODE_BACKSLASH)                  { return '\\'; }
-	else if (keyCode == AKEYCODE_SEMICOLON)                  { return ';'; }
-	else if (keyCode == AKEYCODE_APOSTROPHE)                 { return '\''; }
-	else if (keyCode == AKEYCODE_SLASH)                      { return '/'; }
+	else if (keyCode == AKEYCODE_GRAVE)                      { return shift ? '~' : '`'; }
+	else if (keyCode == AKEYCODE_MINUS)                      { return shift ? '_' : '-'; }
+	else if (keyCode == AKEYCODE_EQUALS)                     { return shift ? '+' : '='; }
+	else if (keyCode == AKEYCODE_LEFT_BRACKET)               { return shift ? '{' : '['; }
+	else if (keyCode == AKEYCODE_RIGHT_BRACKET)              { return shift ? '}' : ']'; }
+	else if (keyCode == AKEYCODE_BACKSLASH)                  { return shift ? '|' : '\\'; }
+	else if (keyCode == AKEYCODE_SEMICOLON)                  { return shift ? ':' : ';'; }
+	else if (keyCode == AKEYCODE_APOSTROPHE)                 { return shift ? '\"' : '\''; }
+	else if (keyCode == AKEYCODE_SLASH)                      { return shift ? '?' : '/'; }
 	else if (keyCode == AKEYCODE_AT)                         { return '@'; }
-	else if (keyCode == AKEYCODE_MOVE_END)                   { return 0x10d; }
-	else if (keyCode == AKEYCODE_MOVE_HOME)                  { return 0x10c; }
+	else if (keyCode == AKEYCODE_ESCAPE)                     { return 0x100; } // not really known but closes dev menu
 	else if (keyCode == AKEYCODE_DEL)                        { return 0x101; } // backspace???
 	else if (keyCode == AKEYCODE_FORWARD_DEL)                { return 0x102; }
+	else if (keyCode == AKEYCODE_TAB)                        { return 0x103; } // not actually known
+	else if (keyCode == AKEYCODE_DPAD_UP)                    { return 0x107; } // guess
+	else if (keyCode == AKEYCODE_DPAD_DOWN)                  { return 0x108; } // guess
 	else if (keyCode == AKEYCODE_DPAD_LEFT)                  { return 0x109; }
 	else if (keyCode == AKEYCODE_DPAD_RIGHT)                 { return 0x10a; }
-	else if (keyCode == AKEYCODE_ESCAPE)                     { return 0x100; } // not really known but closes dev menu
-	else if (keyCode == AKEYCODE_TAB)                        { return 0x103; } // not actually known
+	else if (keyCode == AKEYCODE_MOVE_HOME)                  { return 0x10c; }
+	else if (keyCode == AKEYCODE_MOVE_END)                   { return 0x10d; }
 	else if (keyCode == AKEYCODE_CTRL_LEFT || keyCode == AKEYCODE_CTRL_RIGHT) {
 		return 0x10b;
 	}
@@ -140,7 +145,9 @@ static inline int mapKeyToChar(int32_t keyCode, int32_t meta) {
 }
 
 static int32_t onInputEventHook(struct android_app* app, AInputEvent* event) {
-	QiInput *gAndroidInput = YipLookupSymbol("gAndroidInput");
+	static QiInput *gAndroidInput;
+	
+	if (!gAndroidInput) { gAndroidInput = YipLookupSymbol("gAndroidInput"); }
 	
 	const uint32_t source = AInputEvent_getSource(event);
 	const uint32_t type = AInputEvent_getType(event);
@@ -162,6 +169,33 @@ static int32_t onInputEventHook(struct android_app* app, AInputEvent* event) {
 			}
 			case AKEY_EVENT_ACTION_UP: {
 				QiInput_registerKeyUp(gAndroidInput, key);
+				break;
+			}
+		}
+		
+		return 1;
+	}
+	else if (type == AINPUT_EVENT_TYPE_MOTION && source == AINPUT_SOURCE_MOUSE) {
+		const int32_t action = AMotionEvent_getAction(event) & AMOTION_EVENT_ACTION_MASK;
+		const int32_t pointer_index = (AMotionEvent_getAction(event) & AMOTION_EVENT_ACTION_POINTER_INDEX_MASK) >> 8;
+		// const int32_t action_button = AMotionEvent_getActionButton(event);
+		const int32_t x = (int32_t) AMotionEvent_getX(event, pointer_index);
+		const int32_t y = (int32_t) AMotionEvent_getY(event, pointer_index);
+		
+		switch (action) {
+			case AMOTION_EVENT_ACTION_DOWN: {
+				QiInput_registerButtonDown(gAndroidInput, 1);
+				QiInput_registerMousePos(gAndroidInput, x, y);
+				break;
+			}
+			case AMOTION_EVENT_ACTION_CANCEL:
+			case AMOTION_EVENT_ACTION_UP: {
+				QiInput_registerButtonUp(gAndroidInput, 1);
+				QiInput_registerMousePos(gAndroidInput, x, y);
+				break;
+			}
+			case AMOTION_EVENT_ACTION_MOVE: {
+				QiInput_registerMousePos(gAndroidInput, x, y);
 				break;
 			}
 		}
@@ -200,12 +234,17 @@ int knEnableInput(lua_State *L) {
 	QiInput_isKeyDown = YipLookupSymbol("_ZNK7QiInput9isKeyDownEi");
 	QiInput_wasKeyPressed = YipLookupSymbol("_ZNK7QiInput13wasKeyPressedEi");
 	QiInput_wasKeyReleased = YipLookupSymbol("_ZNK7QiInput14wasKeyReleasedEi");
+	QiInput_registerMousePos = YipLookupSymbol("_ZN7QiInput16registerMousePosEii");
+	QiInput_registerButtonDown = YipLookupSymbol("_ZN7QiInput18registerButtonDownEi");
+	QiInput_registerButtonUp = YipLookupSymbol("_ZN7QiInput16registerButtonUpEi");
 	
 	return 0;
 }
 
+#define INPUT_EVENT_HANDLER_ADDRESS 0x45b68
+
 const char *KNInitKeyboard(void) {
-	// arm64 only for now
-	onInputEvent = YipHookFunctionAt(0x45b68, onInputEventHook, false);
+	// we should use YipGetAndroidAppStruct()->onInputEvent in the future...
+	onInputEvent = YipHookFunctionAt(INPUT_EVENT_HANDLER_ADDRESS, onInputEventHook, false);
 	return NULL;
 }
