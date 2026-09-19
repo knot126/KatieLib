@@ -307,3 +307,46 @@ bool KNAccquireMulticastLock(void) {
 	
 	return true;
 }
+
+#define ANDROID_R_ID_CONTENT 0x01020002
+
+void KNCaptureMouse(bool capture) {
+	DO_JNI_STUFF;
+	
+	jobject activity = gApp->activity->clazz;
+	
+	jmethodID findViewById = jni_get_method_id(jni, "android/app/NativeActivity", "findViewById", "(I)Landroid/view/View;");
+	
+	jobject view = (*jni)->CallObjectMethod(jni, activity, findViewById, ANDROID_R_ID_CONTENT);
+	
+	JNI_EXCEPTION_ABORT(jni, "activity.findViewById(0x01020002)");
+	
+#if 1
+	jmethodID getRootView = jni_get_method_id(jni, "android/view/View", "getRootView", "()Landroid/view/View;");
+	
+	view = (*jni)->CallObjectMethod(jni, view, getRootView);
+	
+	JNI_EXCEPTION_ABORT(jni, "view.getRootView()");
+#else
+	jmethodID getChildAt = jni_get_method_id(jni, "android/view/ViewGroup", "getChildAt", "(I)Landroid/view/View;");
+	
+	view = (*jni)->CallObjectMethod(jni, view, getChildAt, 0);
+	
+	JNI_EXCEPTION_ABORT(jni, "view.getChildAt(0)");
+#endif
+	
+	if (capture) {
+		jmethodID requestPointerCapture = jni_get_method_id(jni, "android/view/View", "requestPointerCapture", "()V");
+		
+		(*jni)->CallVoidMethod(jni, view, requestPointerCapture);
+		
+		JNI_EXCEPTION_ABORT(jni, "view.requestPointerCapture()");
+	}
+	else {
+		jmethodID releasePointerCapture = jni_get_method_id(jni, "android/view/View", "releasePointerCapture", "()V");
+		
+		(*jni)->CallVoidMethod(jni, view, releasePointerCapture);
+		
+		JNI_EXCEPTION_ABORT(jni, "view.releasePointerCapture()");
+	}
+}

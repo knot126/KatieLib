@@ -18,6 +18,8 @@ bool (*QiInput_wasTouchReleased)(QiInput *this, int index);
 bool (*QiInput_isKeyDown)(QiInput *this, int key);
 bool (*QiInput_wasKeyPressed)(QiInput *this, int key);
 bool (*QiInput_wasKeyReleased)(QiInput *this, int key);
+int (*QiInput_getMousePosX)(QiInput *this);
+int (*QiInput_getMousePosY)(QiInput *this);
 
 void (*QiInput_registerKeyDown)(QiInput *this, int key);
 void (*QiInput_registerKeyUp)(QiInput *this, int key);
@@ -84,6 +86,19 @@ int knWasKeyPressed(lua_State *L) {
 int knWasKeyReleased(lua_State *L) {
 	lua_pushboolean(L, QiInput_wasKeyReleased(gInput, knGetKey(L, 1)));
 	return 1;
+}
+
+int knGetMousePos(lua_State *L) {
+	int x = QiInput_getMousePosX(gInput);
+	int y = QiInput_getMousePosY(gInput);
+	lua_pushinteger(L, x);
+	lua_pushinteger(L, y);
+	return 2;
+}
+
+int knCaptureMouse(lua_State *L) {
+	KNCaptureMouse(lua_toboolean(L, 1));
+	return 0;
 }
 
 // Simulated input
@@ -232,6 +247,8 @@ int knEnableInput(lua_State *L) {
 	knRegisterFunc(L, knIsKeyDown);
 	knRegisterFunc(L, knWasKeyPressed);
 	knRegisterFunc(L, knWasKeyReleased);
+	knRegisterFunc(L, knGetMousePos);
+	knRegisterFunc(L, knCaptureMouse);
 	
 	// Simulated input
 	knRegisterFunc(L, knRegisterKeyDown);
@@ -252,6 +269,8 @@ int knEnableInput(lua_State *L) {
 	QiInput_registerMousePos = YipLookupSymbol("_ZN7QiInput16registerMousePosEii");
 	QiInput_registerButtonDown = YipLookupSymbol("_ZN7QiInput18registerButtonDownEi");
 	QiInput_registerButtonUp = YipLookupSymbol("_ZN7QiInput16registerButtonUpEi");
+	QiInput_getMousePosX = YipLookupSymbol("_ZNK7QiInput12getMousePosXEv");
+	QiInput_getMousePosY = YipLookupSymbol("_ZNK7QiInput12getMousePosYEv");
 	
 	return 0;
 }
