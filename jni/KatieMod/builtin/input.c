@@ -15,6 +15,10 @@ int (*QiInput_getTouchPosX)(QiInput *this, int index);
 int (*QiInput_getTouchPosY)(QiInput *this, int index);
 bool (*QiInput_wasTouchPressed)(QiInput *this, int index);
 bool (*QiInput_wasTouchReleased)(QiInput *this, int index);
+bool (*QiInput_isKeyDown)(QiInput *this, int key);
+bool (*QiInput_wasKeyPressed)(QiInput *this, int key);
+bool (*QiInput_wasKeyReleased)(QiInput *this, int key);
+
 void (*QiInput_registerKeyDown)(QiInput *this, int key);
 void (*QiInput_registerKeyUp)(QiInput *this, int key);
 
@@ -47,15 +51,6 @@ int knWasTouchReleased(lua_State *L) {
 	return 1;
 }
 
-/*
-TODO: Doesn't work! ANativeActivity_showSoftInput is broken.
-int knShowKeyboard(lua_State *L) {
-	bool forced = lua_toboolean(L, 1);
-	ANativeActivity_showSoftInput(gApp->activity, forced ? ANATIVEACTIVITY_SHOW_SOFT_INPUT_FORCED : ANATIVEACTIVITY_SHOW_SOFT_INPUT_IMPLICIT);
-	return 0;
-}
-*/
-
 int knGetKey(lua_State *L, int index) {
 	const int t = lua_type(L, index);
 	
@@ -73,6 +68,22 @@ int knGetKey(lua_State *L, int index) {
 	}
 }
 
+int knIsKeyDown(lua_State *L) {
+	lua_pushboolean(L, QiInput_isKeyDown(gInput, knGetKey(L, 1)));
+	return 1;
+}
+
+int knWasKeyPressed(lua_State *L) {
+	lua_pushboolean(L, QiInput_wasKeyPressed(gInput, knGetKey(L, 1)));
+	return 1;
+}
+
+int knWasKeyReleased(lua_State *L) {
+	lua_pushboolean(L, QiInput_wasKeyReleased(gInput, knGetKey(L, 1)));
+	return 1;
+}
+
+// Simulated input
 int knRegisterKeyDown(lua_State *L) {
 	QiInput_registerKeyDown(gInput, knGetKey(L, 1));
 	return 0;
@@ -83,56 +94,27 @@ int knRegisterKeyUp(lua_State *L) {
 	return 0;
 }
 
-int wasKeyPressedKey;
-bool wasKeyPressedHooked;
-
-bool QiInput_wasKeyPressed_hook(QiInput *this, int key) {
-	if (wasKeyPressedKey && wasKeyPressedKey == key) {
-		wasKeyPressedKey = 0;
-		return true;
-	}
-	else {
-		return false;
-	}
-}
-
-int knPressOnce(lua_State *L) {
-	// Since the input might get cleared, simpily doing KeyUp and KeyDown
-	// immediately may not actually register the key, so we need this hack for
-	// testing.
-	// This can conflict with the knReload hack, so its not enabled until used
-	if (!wasKeyPressedHooked) {
-		YipHookFunction("_ZNK7QiInput13wasKeyPressedEi", QiInput_wasKeyPressed_hook, true);
-		wasKeyPressedHooked = true;
-	}
-	
-	wasKeyPressedKey = knGetKey(L, 1);
-	return 0;
-}
-
 /**
  * Keyboard implementation
  */
 int32_t (*onInputEvent)(struct android_app* app, AInputEvent* event);
 
 static inline int mapKeyToChar(int32_t keyCode, int32_t meta) {
+	const bool shift = (meta & AMETA_SHIFT_ON);
+	
 	if (keyCode >= AKEYCODE_0 && keyCode <= AKEYCODE_9) {
 		return '0' + (keyCode - AKEYCODE_0);
 	}
 	else if (keyCode == AKEYCODE_STAR)                       { return '*'; }
 	else if (keyCode == AKEYCODE_POUND)                      { return '#'; }
 	else if (keyCode >= AKEYCODE_A && keyCode <= AKEYCODE_Z) {
-		return ((meta & AMETA_SHIFT_ON) ? 'A' : 'a') + (keyCode - AKEYCODE_A);
+		return (shift ? 'A' : 'a') + (keyCode - AKEYCODE_A);
 	}
 	else if (keyCode == AKEYCODE_COMMA)                      { return ','; }
 	else if (keyCode == AKEYCODE_PERIOD)                     { return '.'; }
 	else if (keyCode == AKEYCODE_SPACE)                      { return ' '; }
 	else if (keyCode == AKEYCODE_GRAVE)                      { return '`'; }
 	else if (keyCode == AKEYCODE_MINUS)                      { return '-'; }
-	else if (keyCode == AKEYCODE_MOVE_END)                   { return 0x10d; }
-	else if (keyCode == AKEYCODE_MOVE_HOME)                  { return 0x10c; }
-	else if (keyCode == AKEYCODE_DEL)                        { return 0x101; } // backspace???
-	else if (keyCode == AKEYCODE_FORWARD_DEL)                { return 0x102; }
 	else if (keyCode == AKEYCODE_EQUALS)                     { return '='; }
 	else if (keyCode == AKEYCODE_LEFT_BRACKET)               { return '['; }
 	else if (keyCode == AKEYCODE_RIGHT_BRACKET)              { return ']'; }
@@ -141,8 +123,14 @@ static inline int mapKeyToChar(int32_t keyCode, int32_t meta) {
 	else if (keyCode == AKEYCODE_APOSTROPHE)                 { return '\''; }
 	else if (keyCode == AKEYCODE_SLASH)                      { return '/'; }
 	else if (keyCode == AKEYCODE_AT)                         { return '@'; }
+	else if (keyCode == AKEYCODE_MOVE_END)                   { return 0x10d; }
+	else if (keyCode == AKEYCODE_MOVE_HOME)                  { return 0x10c; }
+	else if (keyCode == AKEYCODE_DEL)                        { return 0x101; } // backspace???
+	else if (keyCode == AKEYCODE_FORWARD_DEL)                { return 0x102; }
 	else if (keyCode == AKEYCODE_DPAD_LEFT)                  { return 0x109; }
 	else if (keyCode == AKEYCODE_DPAD_RIGHT)                 { return 0x10a; }
+	else if (keyCode == AKEYCODE_ESCAPE)                     { return 0x100; } // not really known but closes dev menu
+	else if (keyCode == AKEYCODE_TAB)                        { return 0x103; } // not actually known
 	else if (keyCode == AKEYCODE_CTRL_LEFT || keyCode == AKEYCODE_CTRL_RIGHT) {
 		return 0x10b;
 	}
@@ -152,14 +140,11 @@ static inline int mapKeyToChar(int32_t keyCode, int32_t meta) {
 }
 
 static int32_t onInputEventHook(struct android_app* app, AInputEvent* event) {
-// #if 0
 	QiInput *gAndroidInput = YipLookupSymbol("gAndroidInput");
 	
 	const uint32_t source = AInputEvent_getSource(event);
 	const uint32_t type = AInputEvent_getType(event);
-// #endif
 	
-// #if 0
 	if (type == AINPUT_EVENT_TYPE_KEY && source == AINPUT_SOURCE_KEYBOARD) {
 		const int32_t keycode = AKeyEvent_getKeyCode(event);
 		const int32_t action = AKeyEvent_getAction(event);
@@ -184,23 +169,26 @@ static int32_t onInputEventHook(struct android_app* app, AInputEvent* event) {
 		return 1;
 	}
 	else {
-// #endif
 		return onInputEvent(app, event);
-// #if 0
 	}
-// #endif
 }
 
 int knEnableInput(lua_State *L) {
+	// Get raw input
 	knRegisterFunc(L, knGetTouchCount);
 	knRegisterFunc(L, knHasTouch);
 	knRegisterFunc(L, knGetTouchPos);
 	knRegisterFunc(L, knWasTouchPressed);
 	knRegisterFunc(L, knWasTouchReleased);
+	knRegisterFunc(L, knIsKeyDown);
+	knRegisterFunc(L, knWasKeyPressed);
+	knRegisterFunc(L, knWasKeyReleased);
+	
+	// Simulated input
 	knRegisterFunc(L, knRegisterKeyDown);
 	knRegisterFunc(L, knRegisterKeyUp);
-	knRegisterFunc(L, knPressOnce);
 	
+	// Functions from QiInput we need
 	QiInput_getTouchCount = YipLookupSymbol("_ZNK7QiInput13getTouchCountEv");
 	QiInput_hasTouch = YipLookupSymbol("_ZNK7QiInput8hasTouchEi");
 	QiInput_getTouchPosX = YipLookupSymbol("_ZNK7QiInput12getTouchPosXEi");
@@ -209,6 +197,9 @@ int knEnableInput(lua_State *L) {
 	QiInput_wasTouchReleased = YipLookupSymbol("_ZNK7QiInput16wasTouchReleasedEi");
 	QiInput_registerKeyDown = YipLookupSymbol("_ZN7QiInput15registerKeyDownEi");
 	QiInput_registerKeyUp = YipLookupSymbol("_ZN7QiInput13registerKeyUpEi");
+	QiInput_isKeyDown = YipLookupSymbol("_ZNK7QiInput9isKeyDownEi");
+	QiInput_wasKeyPressed = YipLookupSymbol("_ZNK7QiInput13wasKeyPressedEi");
+	QiInput_wasKeyReleased = YipLookupSymbol("_ZNK7QiInput14wasKeyReleasedEi");
 	
 	return 0;
 }
