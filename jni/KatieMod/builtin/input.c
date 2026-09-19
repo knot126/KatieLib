@@ -175,6 +175,7 @@ static int32_t onInputEventHook(struct android_app* app, AInputEvent* event) {
 		
 		return 1;
 	}
+// #if 0
 	else if (type == AINPUT_EVENT_TYPE_MOTION && source == AINPUT_SOURCE_MOUSE) {
 		const int32_t action = AMotionEvent_getAction(event) & AMOTION_EVENT_ACTION_MASK;
 		const int32_t pointer_index = (AMotionEvent_getAction(event) & AMOTION_EVENT_ACTION_POINTER_INDEX_MASK) >> 8;
@@ -183,25 +184,39 @@ static int32_t onInputEventHook(struct android_app* app, AInputEvent* event) {
 		const int32_t y = (int32_t) AMotionEvent_getY(event, pointer_index);
 		
 		switch (action) {
-			case AMOTION_EVENT_ACTION_DOWN: {
+			case AMOTION_EVENT_ACTION_DOWN:
+			// case AMOTION_EVENT_ACTION_BUTTON_PRESS:
+			case AMOTION_EVENT_ACTION_POINTER_DOWN: {
 				QiInput_registerButtonDown(gAndroidInput, 1);
 				QiInput_registerMousePos(gAndroidInput, x, y);
 				break;
 			}
 			case AMOTION_EVENT_ACTION_CANCEL:
-			case AMOTION_EVENT_ACTION_UP: {
+			case AMOTION_EVENT_ACTION_UP:
+			// case AMOTION_EVENT_ACTION_BUTTON_RELEASE:
+			case AMOTION_EVENT_ACTION_POINTER_UP: {
 				QiInput_registerButtonUp(gAndroidInput, 1);
 				QiInput_registerMousePos(gAndroidInput, x, y);
 				break;
 			}
-			case AMOTION_EVENT_ACTION_MOVE: {
+			case AMOTION_EVENT_ACTION_MOVE:
+			case AMOTION_EVENT_ACTION_HOVER_MOVE:
+			case AMOTION_EVENT_ACTION_HOVER_ENTER:
+			case AMOTION_EVENT_ACTION_HOVER_EXIT:
+			case AMOTION_EVENT_ACTION_OUTSIDE:
+			case AMOTION_EVENT_ACTION_SCROLL: {
 				QiInput_registerMousePos(gAndroidInput, x, y);
 				break;
+			}
+			default: {
+				// QiInput_registerButtonUp(gAndroidInput, 1);
+				QiInput_registerMousePos(gAndroidInput, x, y);
 			}
 		}
 		
 		return 1;
 	}
+// #endif
 	else {
 		return onInputEvent(app, event);
 	}
