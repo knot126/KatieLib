@@ -22,8 +22,8 @@ const char *KNDatabaseInit(void);
 const char *KNAntitamperInit(void);
 const char *KNOverlayInit(void);
 const char *KNInitShutdown(void);
-const char *KNInitTick(void);
 const char *KNInitNewAudio(void);
+const char *KNInitKeyboard(void);
 
 ModuleInitFunc submod_init_functions[] = {
 	KNInitLuaUpgrade,
@@ -32,8 +32,8 @@ ModuleInitFunc submod_init_functions[] = {
 	KNAntitamperInit,
 	KNOverlayInit,
 	KNInitShutdown,
-	// KNInitTick,
 	KNInitNewAudio,
+	KNInitKeyboard,
 	NULL,
 };
 
