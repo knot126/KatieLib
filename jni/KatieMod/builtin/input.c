@@ -101,6 +101,18 @@ int knCaptureMouse(lua_State *L) {
 	return 0;
 }
 
+struct MouseDelta {
+	int x, y;
+} gMouseDelta;
+
+int knGetMouseDelta(lua_State *L) {
+	lua_pushinteger(L, gMouseDelta.x);
+	lua_pushinteger(L, gMouseDelta.y);
+	gMouseDelta.x = 0;
+	gMouseDelta.y = 0;
+	return 2;
+}
+
 // Simulated input
 int knRegisterKeyDown(lua_State *L) {
 	QiInput_registerKeyDown(gInput, knGetKey(L, 1));
@@ -199,6 +211,11 @@ static int32_t onInputEventHook(struct android_app* app, AInputEvent* event) {
 		const int32_t x = (int32_t) AMotionEvent_getX(event, pointer_index);
 		const int32_t y = (int32_t) AMotionEvent_getY(event, pointer_index);
 		
+		// HACK: This is a hack for more reliable mouse deltas for e.g. cameras
+		// and stuff.
+		gMouseDelta.x += x;
+		gMouseDelta.y += y;
+		
 		switch (action) {
 			case AMOTION_EVENT_ACTION_DOWN:
 			// case AMOTION_EVENT_ACTION_BUTTON_PRESS:
@@ -250,6 +267,7 @@ int knEnableInput(lua_State *L) {
 	knRegisterFunc(L, knWasKeyReleased);
 	knRegisterFunc(L, knGetMousePos);
 	knRegisterFunc(L, knCaptureMouse);
+	knRegisterFunc(L, knGetMouseDelta);
 	
 	// Simulated input
 	knRegisterFunc(L, knRegisterKeyDown);
