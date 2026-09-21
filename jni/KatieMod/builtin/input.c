@@ -294,10 +294,9 @@ int knEnableInput(lua_State *L) {
 	return 0;
 }
 
-#define INPUT_EVENT_HANDLER_ADDRESS 0x45b68
+// #define INPUT_EVENT_HANDLER_ADDRESS 0x45b68
 
 const char *KNInitKeyboard(void) {
-	// we should use YipGetAndroidAppStruct()->onInputEvent in the future...
-	onInputEvent = YipHookFunctionAt(INPUT_EVENT_HANDLER_ADDRESS, onInputEventHook, false);
+	onInputEvent = YipHookFunctionPointer(YipGetAndroidAppStruct()->onInputEvent, onInputEventHook, false);
 	return NULL;
 }

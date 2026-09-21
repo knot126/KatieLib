@@ -72,6 +72,7 @@ typedef void (*YipModConstructor)(void);
 void *YipLookupSymbol(const char *symbol);
 void *YipHookFunction(const char *symbol, void *hook, bool replace);
 void *YipHookFunctionAt(size_t vaddr, void *hook, bool replace);
+void *YipHookFunctionPointer(void *funcptr, void *hook, bool replace);
 
 bool YipPatch(size_t vaddr, YipBuffer buffer);
 bool YipPatchv2(size_t vaddr, YipBuffer buffer, YipBuffer *original);

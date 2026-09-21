@@ -163,6 +163,19 @@ void *YipHookFunctionAt(size_t vaddr, void *hook, bool replace) {
 	}
 }
 
+void *YipHookFunctionPointer(void *funcptr, void *hook, bool replace) {
+	/**
+	 * Hook a function given a pointer to the function directly.
+	 */
+	
+	if (replace) {
+		return YipReplaceFunction_DetoursImpl(funcptr, 0xffffff, hook);
+	}
+	else {
+		return YipHookFunction_LeafHookImpl(funcptr, 0xffffff, hook);
+	}
+}
+
 bool YipPatch(size_t vaddr, YipBuffer buffer) {
 	/**
 	 * Patch the bytes starting at the virtual address vaddr by replacing them

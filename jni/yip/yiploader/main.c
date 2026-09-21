@@ -35,8 +35,6 @@
 
 typedef void (*AndroidMainFunc)(struct android_app *app);
 
-#include "version.h"
-
 void android_main(struct android_app *app) {
 	const char *status;
 	
@@ -51,7 +49,7 @@ void android_main(struct android_app *app) {
 		abort();
 	}
 	
-	LogI("YipLoader release %s (for %s); App SDK %d, Device SDK %d", SHIM_VERSION, KN_ARCH_STRING, YipLoader_GetAppSDK(), YipLoader_GetDeviceSDK());
+	// LogI("YipLoader (on %s); App SDK %d, Device SDK %d", SHIM_VERSION, KN_ARCH_STRING, YipLoader_GetAppSDK(), YipLoader_GetDeviceSDK());
 	
 	// Load game
 	status = YipLoader_LoadGame();

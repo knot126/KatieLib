@@ -5,24 +5,30 @@ import sys
 from datetime import datetime
 from pathlib import Path
 
+def is_outdated(src, dst):
+	src_stat = os.stat(src)
+	dst_stat = os.stat(dst)
+	return src_stat.st_mtime > dst_stat.st_mtime
+
 if "--help" in sys.argv:
 	print(f"""{sys.argv[0]} [OPTIONS] -- build KatieMod
 
 Options:
-    --no-regen-header   Do not regenerate headers
     --package           Package the final libs into a zip.
     --upgrade           Automatically upgrade apk open in apk editor studio
 """)
 	sys.exit()
 
+# Regenerate version header
+if is_outdated("RELEASE", "jni/KatieMod/version.h"):
+	version = Path("RELEASE").read_text().strip()
+	new_data = f"#define SHIM_VERSION \"{version}\"\n"
+	Path("jni/KatieMod/version.h").write_text(new_data)
+
 game = "smashhit" #if "--game" not in sys.argv else sys.argv[sys.argv.index("--game")+1]
 
-if "--no-regen-header" not in sys.argv:
-	if "--package" in sys.argv:
-		version = Path("RELEASE").read_text().strip()
-		new_data = f"#define SHIM_VERSION \"{version}\"\n"
-		Path("jni/KatieMod/version.h").write_text(new_data)
-	
+# Regenerate module enablement header
+if is_outdated("jni/KatieMod/builtin/modules.txt", "jni/KatieMod/builtin/enablement.h"):
 	with open("jni/KatieMod/builtin/modules.txt", "r") as f:
 		enum = ""
 		enables = ""
@@ -70,4 +76,4 @@ if not status:
 	if "--package" in sys.argv:
 		version = Path("RELEASE").read_text().strip()
 		print(f"Package release as version {version}...")
-		shutil.make_archive(f"katiemod-r{version}-{game}-libs", "zip", "./libs")
+		shutil.make_archive(f"katielib-r{version}-libs", "zip", "./libs")
