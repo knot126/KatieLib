@@ -15,17 +15,26 @@ int (*QiInput_getTouchPosX)(QiInput *this, int index);
 int (*QiInput_getTouchPosY)(QiInput *this, int index);
 bool (*QiInput_wasTouchPressed)(QiInput *this, int index);
 bool (*QiInput_wasTouchReleased)(QiInput *this, int index);
+
 bool (*QiInput_isKeyDown)(QiInput *this, int key);
 bool (*QiInput_wasKeyPressed)(QiInput *this, int key);
 bool (*QiInput_wasKeyReleased)(QiInput *this, int key);
-int (*QiInput_getMousePosX)(QiInput *this);
-int (*QiInput_getMousePosY)(QiInput *this);
-
 void (*QiInput_registerKeyDown)(QiInput *this, int key);
 void (*QiInput_registerKeyUp)(QiInput *this, int key);
+
+int (*QiInput_getMousePosX)(QiInput *this);
+int (*QiInput_getMousePosY)(QiInput *this);
 void (*QiInput_registerMousePos)(QiInput *this, int x, int y);
+
+bool (*QiInput_isButtonDown)(QiInput *this, int button);
+bool (*QiInput_wasButtonPressed)(QiInput *this, int button);
+bool (*QiInput_wasButtonReleased)(QiInput *this, int button);
 void (*QiInput_registerButtonDown)(QiInput *this, int button);
 void (*QiInput_registerButtonUp)(QiInput *this, int button);
+
+/******************************************************************************
+ * TOUCH
+ ******************************************************************************/
 
 int knGetTouchCount(lua_State *L) {
 	lua_pushinteger(L, QiInput_getTouchCount(gInput));
@@ -55,6 +64,28 @@ int knWasTouchReleased(lua_State *L) {
 	lua_pushboolean(L, QiInput_wasTouchReleased(gInput, lua_tointeger(L, 1)));
 	return 1;
 }
+
+/******************************************************************************
+ * KEYBOARD
+ ******************************************************************************/
+
+enum {
+	KN_KEY_ESCAPE             = 0x100, // not really known but closes dev menu
+	KN_KEY_BACKSPACE          = 0x101,
+	KN_KEY_DELETE             = 0x102,
+	KN_KEY_TAB                = 0x103, // not actually known, toggles dev menu
+	KN_KEY_ALT                = 0x104, // made up for katielib
+	KN_KEY_SHIFT              = 0x105, // made up for katielib
+	KN_KEY_META               = 0x106, // made up for katielib
+	KN_KEY_UP_ARROW           = 0x107, // guess
+	KN_KEY_DOWN_ARROW         = 0x108, // guess
+	KN_KEY_LEFT_ARROW         = 0x109,
+	KN_KEY_RIGHT_ARROW        = 0x10a,
+	KN_KEY_CONTROL            = 0x10b,
+	KN_KEY_HOME               = 0x10c,
+	KN_KEY_END                = 0x10d,
+	KN_KEY_MENU               = 0x10e, // made up for katielib
+};
 
 int knGetKey(lua_State *L, int index) {
 	const int t = lua_type(L, index);
@@ -88,6 +119,20 @@ int knWasKeyReleased(lua_State *L) {
 	return 1;
 }
 
+int knRegisterKeyDown(lua_State *L) {
+	QiInput_registerKeyDown(gInput, knGetKey(L, 1));
+	return 0;
+}
+
+int knRegisterKeyUp(lua_State *L) {
+	QiInput_registerKeyUp(gInput, knGetKey(L, 1));
+	return 0;
+}
+
+/******************************************************************************
+ * MOUSE
+ ******************************************************************************/
+
 int knGetMousePos(lua_State *L) {
 	int x = QiInput_getMousePosX(gInput);
 	int y = QiInput_getMousePosY(gInput);
@@ -113,37 +158,42 @@ int knGetMouseDelta(lua_State *L) {
 	return 2;
 }
 
-// Simulated input
-int knRegisterKeyDown(lua_State *L) {
-	QiInput_registerKeyDown(gInput, knGetKey(L, 1));
+/******************************************************************************
+ * BUTTONS
+ ******************************************************************************/
+
+enum {
+	KN_BUTTON_PRIMARY = 1,
+};
+
+int knIsButtonDown(lua_State *L) {
+	lua_pushboolean(L, QiInput_isButtonDown(gInput, lua_tointeger(L, 1)));
+	return 1;
+}
+
+int knWasButtonPressed(lua_State *L) {
+	lua_pushboolean(L, QiInput_wasButtonPressed(gInput, lua_tointeger(L, 1)));
+	return 1;
+}
+
+int knWasButtonReleased(lua_State *L) {
+	lua_pushboolean(L, QiInput_wasButtonReleased(gInput, lua_tointeger(L, 1)));
+	return 1;
+}
+
+int knRegisterButtonDown(lua_State *L) {
+	QiInput_registerButtonDown(gInput, lua_tointeger(L, 1));
 	return 0;
 }
 
-int knRegisterKeyUp(lua_State *L) {
-	QiInput_registerKeyUp(gInput, knGetKey(L, 1));
+int knRegisterButtonUp(lua_State *L) {
+	QiInput_registerButtonUp(gInput, lua_tointeger(L, 1));
 	return 0;
 }
 
 /**
  * Keyboard implementation
  */
-enum {
-	KN_KEY_ESCAPE             = 0x100, // not really known but closes dev menu
-	KN_KEY_BACKSPACE          = 0x101,
-	KN_KEY_DELETE             = 0x102,
-	KN_KEY_TAB                = 0x103, // not actually known, toggles dev menu
-	KN_KEY_ALT                = 0x104, // made up for katielib
-	KN_KEY_SHIFT              = 0x105, // made up for katielib
-	KN_KEY_META               = 0x106, // made up for katielib
-	KN_KEY_UP_ARROW           = 0x107, // guess
-	KN_KEY_DOWN_ARROW         = 0x108, // guess
-	KN_KEY_LEFT_ARROW         = 0x109,
-	KN_KEY_RIGHT_ARROW        = 0x10a,
-	KN_KEY_CONTROL            = 0x10b,
-	KN_KEY_HOME               = 0x10c,
-	KN_KEY_END                = 0x10d,
-	KN_KEY_MENU               = 0x10e, // made up for katielib
-};
 
 int32_t (*onInputEvent)(struct android_app* app, AInputEvent* event);
 
@@ -289,22 +339,31 @@ static int32_t onInputEventHook(struct android_app* app, AInputEvent* event) {
 }
 
 int knEnableInput(lua_State *L) {
-	// Get raw input
+	// Touch
 	knRegisterFunc(L, knGetTouchCount);
 	knRegisterFunc(L, knHasTouch);
 	knRegisterFunc(L, knGetTouchPos);
 	knRegisterFunc(L, knWasTouchPressed);
 	knRegisterFunc(L, knWasTouchReleased);
+	
+	// Keyboard
 	knRegisterFunc(L, knIsKeyDown);
 	knRegisterFunc(L, knWasKeyPressed);
 	knRegisterFunc(L, knWasKeyReleased);
+	knRegisterFunc(L, knRegisterKeyDown);
+	knRegisterFunc(L, knRegisterKeyUp);
+	
+	// Mouse
 	knRegisterFunc(L, knGetMousePos);
 	knRegisterFunc(L, knCaptureMouse);
 	knRegisterFunc(L, knGetMouseDelta);
 	
-	// Simulated input
-	knRegisterFunc(L, knRegisterKeyDown);
-	knRegisterFunc(L, knRegisterKeyUp);
+	// Buttons
+	knRegisterFunc(L, knIsButtonDown);
+	knRegisterFunc(L, knWasButtonPressed);
+	knRegisterFunc(L, knWasButtonReleased);
+	knRegisterFunc(L, knRegisterButtonDown);
+	knRegisterFunc(L, knRegisterButtonUp);
 	
 	// Key codes
 	knLuaPushEnum(L, KN_KEY_ESCAPE);
@@ -323,6 +382,9 @@ int knEnableInput(lua_State *L) {
 	knLuaPushEnum(L, KN_KEY_END);
 	knLuaPushEnum(L, KN_KEY_MENU);
 	
+	// Button codes
+	knLuaPushEnum(L, KN_BUTTON_PRIMARY);
+	
 	return 0;
 }
 
@@ -336,16 +398,22 @@ const char *KNInitKeyboard(void) {
 	QiInput_getTouchPosY = YipLookupSymbol("_ZNK7QiInput12getTouchPosYEi");
 	QiInput_wasTouchPressed = YipLookupSymbol("_ZNK7QiInput15wasTouchPressedEi");
 	QiInput_wasTouchReleased = YipLookupSymbol("_ZNK7QiInput16wasTouchReleasedEi");
-	QiInput_registerKeyDown = YipLookupSymbol("_ZN7QiInput15registerKeyDownEi");
-	QiInput_registerKeyUp = YipLookupSymbol("_ZN7QiInput13registerKeyUpEi");
+	
 	QiInput_isKeyDown = YipLookupSymbol("_ZNK7QiInput9isKeyDownEi");
 	QiInput_wasKeyPressed = YipLookupSymbol("_ZNK7QiInput13wasKeyPressedEi");
 	QiInput_wasKeyReleased = YipLookupSymbol("_ZNK7QiInput14wasKeyReleasedEi");
-	QiInput_registerMousePos = YipLookupSymbol("_ZN7QiInput16registerMousePosEii");
-	QiInput_registerButtonDown = YipLookupSymbol("_ZN7QiInput18registerButtonDownEi");
-	QiInput_registerButtonUp = YipLookupSymbol("_ZN7QiInput16registerButtonUpEi");
+	QiInput_registerKeyDown = YipLookupSymbol("_ZN7QiInput15registerKeyDownEi");
+	QiInput_registerKeyUp = YipLookupSymbol("_ZN7QiInput13registerKeyUpEi");
+	
 	QiInput_getMousePosX = YipLookupSymbol("_ZNK7QiInput12getMousePosXEv");
 	QiInput_getMousePosY = YipLookupSymbol("_ZNK7QiInput12getMousePosYEv");
+	QiInput_registerMousePos = YipLookupSymbol("_ZN7QiInput16registerMousePosEii");
+	
+	QiInput_isButtonDown = YipLookupSymbol("_ZNK7QiInput12isButtonDownEi");
+	QiInput_wasButtonPressed = YipLookupSymbol("_ZNK7QiInput16wasButtonPressedEi");
+	QiInput_wasButtonReleased = YipLookupSymbol("_ZNK7QiInput17wasButtonReleasedEi");
+	QiInput_registerButtonDown = YipLookupSymbol("_ZN7QiInput18registerButtonDownEi");
+	QiInput_registerButtonUp = YipLookupSymbol("_ZN7QiInput16registerButtonUpEi");
 	
 #ifdef INPUT_EVENT_HANDLER_ADDRESS
 	onInputEvent = YipHookFunctionAt(INPUT_EVENT_HANDLER_ADDRESS, onInputEventHook, false);
