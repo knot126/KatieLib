@@ -127,10 +127,28 @@ int knRegisterKeyUp(lua_State *L) {
 /**
  * Keyboard implementation
  */
+enum {
+	KN_KEY_ESCAPE             = 0x100, // not really known but closes dev menu
+	KN_KEY_BACKSPACE          = 0x101,
+	KN_KEY_DELETE             = 0x102,
+	KN_KEY_TAB                = 0x103, // not actually known, toggles dev menu
+	KN_KEY_ALT                = 0x104, // made up for katielib
+	KN_KEY_SHIFT              = 0x105, // made up for katielib
+	KN_KEY_META               = 0x106, // made up for katielib
+	KN_KEY_UP_ARROW           = 0x107, // guess
+	KN_KEY_DOWN_ARROW         = 0x108, // guess
+	KN_KEY_LEFT_ARROW         = 0x109,
+	KN_KEY_RIGHT_ARROW        = 0x10a,
+	KN_KEY_CONTROL            = 0x10b,
+	KN_KEY_HOME               = 0x10c,
+	KN_KEY_END                = 0x10d,
+	KN_KEY_MENU               = 0x10e, // made up for katielib
+};
+
 int32_t (*onInputEvent)(struct android_app* app, AInputEvent* event);
 
 static inline int mapKeyToChar(int32_t keyCode, int32_t meta) {
-	const bool shift = (meta & AMETA_SHIFT_ON) == AMETA_SHIFT_ON;
+	// const bool shift = (meta & AMETA_SHIFT_ON) == AMETA_SHIFT_ON;
 	
 	if (keyCode >= AKEYCODE_0 && keyCode <= AKEYCODE_9) {
 		return '0' + (keyCode - AKEYCODE_0);
@@ -138,33 +156,48 @@ static inline int mapKeyToChar(int32_t keyCode, int32_t meta) {
 	else if (keyCode == AKEYCODE_STAR)                       { return '*'; }
 	else if (keyCode == AKEYCODE_POUND)                      { return '#'; }
 	else if (keyCode >= AKEYCODE_A && keyCode <= AKEYCODE_Z) {
-		return (shift ? 'A' : 'a') + (keyCode - AKEYCODE_A);
+		return 'a' + (keyCode - AKEYCODE_A);
 	}
-	else if (keyCode == AKEYCODE_COMMA)                      { return shift ? '<' : ','; }
-	else if (keyCode == AKEYCODE_PERIOD)                     { return shift ? '>' : '.'; }
+	else if (keyCode == AKEYCODE_COMMA)                      { return ','; }
+	else if (keyCode == AKEYCODE_PERIOD)                     { return '.'; }
+	else if (keyCode == AKEYCODE_ALT_LEFT || keyCode == AKEYCODE_ALT_RIGHT) {
+		return KN_KEY_ALT;
+	}
+	else if (keyCode == AKEYCODE_SHIFT_LEFT || keyCode == AKEYCODE_SHIFT_RIGHT) {
+		return KN_KEY_SHIFT;
+	}
+	else if (keyCode == AKEYCODE_TAB)                        { return KN_KEY_TAB; }
 	else if (keyCode == AKEYCODE_SPACE)                      { return ' '; }
-	else if (keyCode == AKEYCODE_GRAVE)                      { return shift ? '~' : '`'; }
-	else if (keyCode == AKEYCODE_MINUS)                      { return shift ? '_' : '-'; }
-	else if (keyCode == AKEYCODE_EQUALS)                     { return shift ? '+' : '='; }
-	else if (keyCode == AKEYCODE_LEFT_BRACKET)               { return shift ? '{' : '['; }
-	else if (keyCode == AKEYCODE_RIGHT_BRACKET)              { return shift ? '}' : ']'; }
-	else if (keyCode == AKEYCODE_BACKSLASH)                  { return shift ? '|' : '\\'; }
-	else if (keyCode == AKEYCODE_SEMICOLON)                  { return shift ? ':' : ';'; }
-	else if (keyCode == AKEYCODE_APOSTROPHE)                 { return shift ? '\"' : '\''; }
-	else if (keyCode == AKEYCODE_SLASH)                      { return shift ? '?' : '/'; }
+	else if (keyCode == AKEYCODE_ENTER)                      { return '\n'; }
+	else if (keyCode == AKEYCODE_DEL)                        { return KN_KEY_BACKSPACE; }
+	else if (keyCode == AKEYCODE_GRAVE)                      { return '`'; }
+	else if (keyCode == AKEYCODE_MINUS)                      { return '-'; }
+	else if (keyCode == AKEYCODE_EQUALS)                     { return '='; }
+	else if (keyCode == AKEYCODE_LEFT_BRACKET)               { return '['; }
+	else if (keyCode == AKEYCODE_RIGHT_BRACKET)              { return ']'; }
+	else if (keyCode == AKEYCODE_BACKSLASH)                  { return '\\'; }
+	else if (keyCode == AKEYCODE_SEMICOLON)                  { return ';'; }
+	else if (keyCode == AKEYCODE_APOSTROPHE)                 { return '\''; }
+	else if (keyCode == AKEYCODE_SLASH)                      { return '/'; }
 	else if (keyCode == AKEYCODE_AT)                         { return '@'; }
-	else if (keyCode == AKEYCODE_ESCAPE)                     { return 0x100; } // not really known but closes dev menu
-	else if (keyCode == AKEYCODE_DEL)                        { return 0x101; } // backspace???
-	else if (keyCode == AKEYCODE_FORWARD_DEL)                { return 0x102; }
-	else if (keyCode == AKEYCODE_TAB)                        { return 0x103; } // not actually known
-	else if (keyCode == AKEYCODE_DPAD_UP)                    { return 0x107; } // guess
-	else if (keyCode == AKEYCODE_DPAD_DOWN)                  { return 0x108; } // guess
-	else if (keyCode == AKEYCODE_DPAD_LEFT)                  { return 0x109; }
-	else if (keyCode == AKEYCODE_DPAD_RIGHT)                 { return 0x10a; }
-	else if (keyCode == AKEYCODE_MOVE_HOME)                  { return 0x10c; }
-	else if (keyCode == AKEYCODE_MOVE_END)                   { return 0x10d; }
+	else if (keyCode == AKEYCODE_PLUS)                       { return '+'; }
+	else if (keyCode == AKEYCODE_MENU)                       { return KN_KEY_MENU; }
+	else if (keyCode == AKEYCODE_ESCAPE)                     { return KN_KEY_ESCAPE; } 
+	else if (keyCode == AKEYCODE_FORWARD_DEL)                { return KN_KEY_DELETE; }
 	else if (keyCode == AKEYCODE_CTRL_LEFT || keyCode == AKEYCODE_CTRL_RIGHT) {
-		return 0x10b;
+		return KN_KEY_CONTROL;
+	}
+	else if (keyCode == AKEYCODE_META_LEFT || keyCode == AKEYCODE_META_RIGHT) {
+		return KN_KEY_META;
+	}
+	else if (keyCode == AKEYCODE_DPAD_UP)                    { return KN_KEY_UP_ARROW; }
+	else if (keyCode == AKEYCODE_DPAD_DOWN)                  { return KN_KEY_DOWN_ARROW; }
+	else if (keyCode == AKEYCODE_DPAD_LEFT)                  { return KN_KEY_LEFT_ARROW; }
+	else if (keyCode == AKEYCODE_DPAD_RIGHT)                 { return KN_KEY_RIGHT_ARROW; }
+	else if (keyCode == AKEYCODE_MOVE_HOME)                  { return KN_KEY_HOME; }
+	else if (keyCode == AKEYCODE_MOVE_END)                   { return KN_KEY_END; }
+	else if (keyCode >= AKEYCODE_NUMPAD_0 && keyCode <= AKEYCODE_NUMPAD_9) {
+		return '0' + (keyCode - AKEYCODE_NUMPAD_0);
 	}
 	else {
 		return 0;
@@ -273,6 +306,29 @@ int knEnableInput(lua_State *L) {
 	knRegisterFunc(L, knRegisterKeyDown);
 	knRegisterFunc(L, knRegisterKeyUp);
 	
+	// Key codes
+	knLuaPushEnum(L, KN_KEY_ESCAPE);
+	knLuaPushEnum(L, KN_KEY_BACKSPACE);
+	knLuaPushEnum(L, KN_KEY_DELETE);
+	knLuaPushEnum(L, KN_KEY_TAB);
+	knLuaPushEnum(L, KN_KEY_ALT);
+	knLuaPushEnum(L, KN_KEY_SHIFT);
+	knLuaPushEnum(L, KN_KEY_META);
+	knLuaPushEnum(L, KN_KEY_UP_ARROW);
+	knLuaPushEnum(L, KN_KEY_DOWN_ARROW);
+	knLuaPushEnum(L, KN_KEY_LEFT_ARROW);
+	knLuaPushEnum(L, KN_KEY_RIGHT_ARROW);
+	knLuaPushEnum(L, KN_KEY_CONTROL);
+	knLuaPushEnum(L, KN_KEY_HOME);
+	knLuaPushEnum(L, KN_KEY_END);
+	knLuaPushEnum(L, KN_KEY_MENU);
+	
+	return 0;
+}
+
+#define INPUT_EVENT_HANDLER_ADDRESS 0x45b68
+
+const char *KNInitKeyboard(void) {
 	// Functions from QiInput we need
 	QiInput_getTouchCount = YipLookupSymbol("_ZNK7QiInput13getTouchCountEv");
 	QiInput_hasTouch = YipLookupSymbol("_ZNK7QiInput8hasTouchEi");
@@ -291,12 +347,10 @@ int knEnableInput(lua_State *L) {
 	QiInput_getMousePosX = YipLookupSymbol("_ZNK7QiInput12getMousePosXEv");
 	QiInput_getMousePosY = YipLookupSymbol("_ZNK7QiInput12getMousePosYEv");
 	
-	return 0;
-}
-
-// #define INPUT_EVENT_HANDLER_ADDRESS 0x45b68
-
-const char *KNInitKeyboard(void) {
+#ifdef INPUT_EVENT_HANDLER_ADDRESS
+	onInputEvent = YipHookFunctionAt(INPUT_EVENT_HANDLER_ADDRESS, onInputEventHook, false);
+#else
 	onInputEvent = YipHookFunctionPointer(YipGetAndroidAppStruct()->onInputEvent, onInputEventHook, false);
+#endif
 	return NULL;
 }
