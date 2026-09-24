@@ -7,6 +7,8 @@
 #include "../lua/lualib.h"
 #include "../lua/lauxlib.h"
 
+#include "../log.h"
+
 static inline QiVec2 knLuaToVec2(lua_State *L, int index) {
 	QiVec2 v;
 	
@@ -95,6 +97,44 @@ static inline void knLuaCopyIndex(lua_State *L, int l, lua_State *M) {
 		case LUA_TLIGHTUSERDATA:
 			lua_pushlightuserdata(M, lua_touserdata(L, l));
 			break;
+	}
+}
+
+static inline int knLuaCallByName(lua_State *L, const char *function_name) {
+	lua_getglobal(L, function_name);
+	
+	if (!lua_isfunction(L, -1)) {
+		lua_pop(L, 1);
+		return 0;
+	}
+	
+	if (lua_pcall(L, 0, 0, 0) == 0) {
+		return 1;
+	}
+	else {
+		LogE("Error in %s: %s", function_name, lua_tostring(L, -1));
+		lua_pop(L, 1);
+		return 0;
+	}
+}
+
+static inline int knLuaCallByNameBool(lua_State *L, const char *function_name) {
+	lua_getglobal(L, function_name);
+	
+	if (!lua_isfunction(L, -1)) {
+		lua_pop(L, 1);
+		return 0;
+	}
+	
+	if (lua_pcall(L, 0, 1, 0) == 0) {
+		int value = lua_toboolean(L, -1);
+		lua_pop(L, 1);
+		return value;
+	}
+	else {
+		LogE("Error in %s: %s", function_name, lua_tostring(L, -1));
+		lua_pop(L, 1);
+		return 0;
 	}
 }
 
