@@ -388,7 +388,29 @@ int knEnableInput(lua_State *L) {
 	return 0;
 }
 
-#define INPUT_EVENT_HANDLER_ADDRESS 0x45b68
+// #define INPUT_EVENT_HANDLER_ADDRESS 0x45b68
+
+#ifndef INPUT_EVENT_HANDLER_ADDRESS
+void (*QiInput_registerBegin)(QiInput *self);
+bool keyboardInputInstalled = false;
+
+void QiInput_registerBegin_hook(QiInput *self) {
+	/**
+	 * HACK: We need to hook only *after* the function is set in the struct :(
+	 * It would be better to hook in ALooper_pollAll() so we have it hooked on
+	 * the very first frame but Leaf doesn't support PLT hooks yet even though
+	 * that's planned.
+	 */
+	
+	QiInput_registerBegin(self);
+	void *fp = YipGetAndroidAppStruct()->onInputEvent;
+	
+	if (!keyboardInputInstalled && fp) {
+		onInputEvent = YipHookFunctionPointer(fp, onInputEventHook, false);
+		keyboardInputInstalled = true;
+	}
+}
+#endif
 
 const char *KNInitKeyboard(void) {
 	// Functions from QiInput we need
@@ -418,7 +440,7 @@ const char *KNInitKeyboard(void) {
 #ifdef INPUT_EVENT_HANDLER_ADDRESS
 	onInputEvent = YipHookFunctionAt(INPUT_EVENT_HANDLER_ADDRESS, onInputEventHook, false);
 #else
-	onInputEvent = YipHookFunctionPointer(YipGetAndroidAppStruct()->onInputEvent, onInputEventHook, false);
+	QiInput_registerBegin = YipHookFunction("_ZN7QiInput13registerBeginEv", QiInput_registerBegin_hook, false);
 #endif
 	return NULL;
 }

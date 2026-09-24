@@ -3,6 +3,7 @@
 
 #include <inttypes.h>
 #include <stdio.h>
+#include <stdbool.h>
 
 struct lua_State;
 typedef struct lua_State lua_State;
@@ -15,9 +16,27 @@ typedef struct QiVec3 {
 	float x, y, z;
 } QiVec3;
 
+typedef struct QiVec4 {
+	float x, y, z, w;
+} QiVec4;
+
 typedef struct QiColor {
 	float r, g, b, a;
 } QiColor;
+
+typedef struct QiQuat {
+	float x, y, z, w;
+} QiQuat;
+
+typedef struct QiMatrix4 {
+	float elements[16];
+} QiMatrix4;
+
+typedef struct QiArray {
+	int length;
+	int capacity;
+	void *data;
+} QiArray;
 
 typedef struct QiAudio {
 	// todo
@@ -127,6 +146,47 @@ typedef struct QiAudioChannel {
 	/* Contents */
 } QiAudioChannel;
 
+typedef enum QiViewportMode {
+	QI_VIEWPORT_MODE_PIXEL = 0,
+	QI_VIEWPORT_MODE_PIXEL_FLIPPED = 1,
+	QI_VIEWPORT_MODE_ORTHO = 2,
+	QI_VIEWPORT_MODE_2D = 3,
+	QI_VIEWPORT_MODE_3D = 4,
+} QiViewportMode;
+
+typedef struct QiViewport {
+	QiViewportMode mode;
+	int left;
+	int top;
+	int right;
+	int bottom;
+	float rotationScaler;
+	float rotation;
+	float aspectRatio;
+	float fieldOfView;
+	float nearPlane;
+	float farPlane;
+	QiVec3 cameraPos;
+	QiQuat cameraRot;
+	QiMatrix4 projectionMatrix;
+	QiMatrix4 modelViewMatrix;
+	QiArray unkArray1;
+	float lastPickX;
+	float lastPickY;
+	float pickRelatedThing;
+	QiArray unkArray2;
+	int unkArray2_data[8];
+	QiArray unkArray3;
+	int unkArray3_data[8];
+	QiArray unkArray4;
+	int unkArray4_data[8];
+	bool scissor;
+	int sci1;
+	int sci4;
+	int sci2;
+	int sci3;
+} QiViewport;
+
 // From Aladdin Enterprise's MD5 implemenation which Dennis uses.
 typedef unsigned char md5_byte_t; /* 8-bit byte */
 typedef unsigned int md5_word_t; /* 32-bit word */
@@ -208,4 +268,11 @@ typedef struct Game {
 	// incomplete
 } Game;
 
+typedef struct Room {
+	Level *level;
+	QiString name;
+	// todo!
+} Room;
+
 #endif
+
