@@ -18,7 +18,6 @@ LOCAL_MODULE    := Katie.smashhit
 LOCAL_SRC_FILES := KatieMod/mod_info.c \
 	KatieMod/main.c \
 	KatieMod/util.c \
-	KatieMod/knshim.c \
 	KatieMod/builtin/events.c \
 	KatieMod/builtin/antitamper.c \
 	KatieMod/builtin/asset.c \
