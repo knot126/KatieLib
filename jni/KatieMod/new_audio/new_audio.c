@@ -2,7 +2,7 @@
  * AAudio implementation for Smash Hit
  */
 
-#include <aaudio/AAudio.h>
+#include "AAudio27.h"
 #include <dlfcn.h>
 #include <yiploader/yiploader.h>
 
@@ -28,6 +28,8 @@ void (*pAAudioStreamBuilder_setChannelCount)(AAudioStreamBuilder* builder, int32
 void (*pAAudioStreamBuilder_setFormat)(AAudioStreamBuilder* builder, aaudio_format_t format);
 void (*pAAudioStreamBuilder_setPerformanceMode)(AAudioStreamBuilder* builder, aaudio_performance_mode_t mode);
 void (*pAAudioStreamBuilder_setDataCallback)(AAudioStreamBuilder* builder, AAudioStream_dataCallback callback, void *userData);
+void (*pAAudioStreamBuilder_setAllowedCapturePolicy)(AAudioStreamBuilder *builder, aaudio_allowed_capture_policy_t capturePolicy);
+void (*pAAudioStreamBuilder_setUsage)(AAudioStreamBuilder *builder, aaudio_usage_t usage);
 aaudio_result_t (*pAAudioStreamBuilder_openStream)(AAudioStreamBuilder* builder, AAudioStream** stream);
 aaudio_result_t (*pAAudioStreamBuilder_delete)(AAudioStreamBuilder* builder);
 aaudio_result_t (*pAAudioStream_close)(AAudioStream* stream);
@@ -45,6 +47,8 @@ static void load_aaudio(void) {
 		LOAD(AAudioStreamBuilder_setFormat)
 		LOAD(AAudioStreamBuilder_setPerformanceMode)
 		LOAD(AAudioStreamBuilder_setDataCallback)
+		LOAD(AAudioStreamBuilder_setAllowedCapturePolicy)
+		LOAD(AAudioStreamBuilder_setUsage)
 		LOAD(AAudioStreamBuilder_openStream)
 		LOAD(AAudioStreamBuilder_delete)
 		LOAD(AAudioStream_close)
@@ -92,6 +96,14 @@ static void attach(QiAudioDeviceAndroid *self, QiAudio *audio) {
 	pAAudioStreamBuilder_setFormat(builder, AAUDIO_FORMAT_PCM_I16);
 	pAAudioStreamBuilder_setPerformanceMode(builder, AAUDIO_PERFORMANCE_MODE_LOW_LATENCY);
 	pAAudioStreamBuilder_setDataCallback(builder, (void *) process, self);
+	
+	if (pAAudioStreamBuilder_setAllowedCapturePolicy) {
+		pAAudioStreamBuilder_setAllowedCapturePolicy(builder, AAUDIO_ALLOW_CAPTURE_BY_ALL);
+	}
+	
+	if (pAAudioStreamBuilder_setUsage) {
+		pAAudioStreamBuilder_setUsage(builder, AAUDIO_USAGE_GAME);
+	}
 	
 	self->audio = NULL;
 	
@@ -146,6 +158,7 @@ static void setEnabled(QiAudioDeviceAndroid *self, bool enabled) {
 }
 
 const char *KNInitNewAudio(void) {
+#if 0
 	load_aaudio();
 	
 	if (gLibAAudio) {
@@ -155,6 +168,6 @@ const char *KNInitNewAudio(void) {
 		YipHookFunction("_ZN19QiAudioDeviceOpenSl6detachEv", detach, true);
 		YipHookFunction("_ZN19QiAudioDeviceOpenSl10setEnabledEb", setEnabled, true);
 	}
-	
+#endif
 	return NULL;
 }
