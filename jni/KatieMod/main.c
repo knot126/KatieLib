@@ -22,7 +22,6 @@ const char *KNDatabaseInit(void);
 const char *KNAntitamperInit(void);
 const char *KNOverlayInit(void);
 const char *KNInitShutdown(void);
-const char *KNInitNewAudio(void);
 const char *KNInitKeyboard(void);
 const char *KNInitEvents(void);
 
