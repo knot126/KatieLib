@@ -164,6 +164,10 @@ int knGetMouseDelta(lua_State *L) {
 
 enum {
 	KN_BUTTON_PRIMARY = 1,
+	KN_BUTTON_SECONDARY = 2,
+	KN_BUTTON_TERTIARY = 3,
+	KN_BUTTON_BACK = 4,
+	KN_BUTTON_FORWARD = 5,
 };
 
 int knIsButtonDown(lua_State *L) {
@@ -254,6 +258,17 @@ static inline int mapKeyToChar(int32_t keyCode, int32_t meta) {
 	}
 }
 
+#if 0
+static inline int mapActionToMouseButton(int action) {
+	if      (action & AMOTION_EVENT_BUTTON_PRIMARY)   { return KN_BUTTON_PRIMARY; }
+	else if (action & AMOTION_EVENT_BUTTON_SECONDARY) { return KN_BUTTON_SECONDARY; }
+	else if (action & AMOTION_EVENT_BUTTON_TERTIARY)  { return KN_BUTTON_TERTIARY; }
+	else if (action & AMOTION_EVENT_BUTTON_BACK)      { return KN_BUTTON_BACK; }
+	else if (action & AMOTION_EVENT_BUTTON_FORWARD)   { return KN_BUTTON_FORWARD; }
+	else { return 0; }
+}
+#endif
+
 static int32_t onInputEventHook(struct android_app* app, AInputEvent* event) {
 	static QiInput *gAndroidInput;
 	
@@ -269,7 +284,7 @@ static int32_t onInputEventHook(struct android_app* app, AInputEvent* event) {
 		const int key = mapKeyToChar(keycode, meta);
 		
 		if (!key) {
-			return 1;
+			return 0;
 		}
 		
 		switch (action) {
@@ -285,12 +300,13 @@ static int32_t onInputEventHook(struct android_app* app, AInputEvent* event) {
 		
 		return 1;
 	}
-// #if 0
 	else if (type == AINPUT_EVENT_TYPE_MOTION &&
 		(source == AINPUT_SOURCE_MOUSE || source == AINPUT_SOURCE_MOUSE_RELATIVE)) {
 		const int32_t action = AMotionEvent_getAction(event) & AMOTION_EVENT_ACTION_MASK;
 		const int32_t pointer_index = (AMotionEvent_getAction(event) & AMOTION_EVENT_ACTION_POINTER_INDEX_MASK) >> 8;
-		// const int32_t action_button = AMotionEvent_getActionButton(event);
+		// Only available in API level 33 and later :/
+		// const int32_t button = mapActionToMouseButton(AMotionEvent_getActionButton(event));
+		const int32_t button = KN_BUTTON_PRIMARY;
 		const int32_t x = (int32_t) AMotionEvent_getX(event, pointer_index);
 		const int32_t y = (int32_t) AMotionEvent_getY(event, pointer_index);
 		
@@ -303,7 +319,7 @@ static int32_t onInputEventHook(struct android_app* app, AInputEvent* event) {
 			case AMOTION_EVENT_ACTION_DOWN:
 			// case AMOTION_EVENT_ACTION_BUTTON_PRESS:
 			case AMOTION_EVENT_ACTION_POINTER_DOWN: {
-				QiInput_registerButtonDown(gAndroidInput, 1);
+				if (button) { QiInput_registerButtonDown(gAndroidInput, button); }
 				QiInput_registerMousePos(gAndroidInput, x, y);
 				break;
 			}
@@ -311,7 +327,7 @@ static int32_t onInputEventHook(struct android_app* app, AInputEvent* event) {
 			case AMOTION_EVENT_ACTION_UP:
 			// case AMOTION_EVENT_ACTION_BUTTON_RELEASE:
 			case AMOTION_EVENT_ACTION_POINTER_UP: {
-				QiInput_registerButtonUp(gAndroidInput, 1);
+				if (button) { QiInput_registerButtonUp(gAndroidInput, button); }
 				QiInput_registerMousePos(gAndroidInput, x, y);
 				break;
 			}
@@ -325,14 +341,12 @@ static int32_t onInputEventHook(struct android_app* app, AInputEvent* event) {
 				break;
 			}
 			default: {
-				// QiInput_registerButtonUp(gAndroidInput, 1);
 				QiInput_registerMousePos(gAndroidInput, x, y);
 			}
 		}
 		
 		return 1;
 	}
-// #endif
 	else {
 		return onInputEvent(app, event);
 	}
