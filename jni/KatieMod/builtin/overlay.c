@@ -440,26 +440,17 @@ bool QiFileInputStream_open_hook(QiFileInputStream *this, const char *path) {
 	strcpy(final_path, path);
 	
 	// If the file path has the .mp3 suffix, we remove it.
-	// if (strlen(final_path) >= 4 && !strcmp(final_path + strlen(final_path) - 4, ".mp3")) {
-	// 	final_path[strlen(final_path) - 4] = '\0';
-	// }
 	katielib_remove_suffix(final_path, ".mp3");
 	
-	// LogI("Want to find: %s", final_path);
-	
 	if (KNOverlayLoad(this, final_path)) {
-		// LogI("Found: %s", final_path);
 		return true;
-	}
-	else {
-		// LogI("Not found: %s", final_path);
 	}
 	
 	// Try real assets dir if that doesn't work
 	return QiFileInputStream_open(this, path);
 }
 
-const char *KNOverlayInit(void) {
+const char *KNInitOverlay(void) {
 	// Hook file input stream open
 	if (!QiFileInputStream_open) {
 		QiFileInputStream_open = YipHookFunction("_ZN17QiFileInputStream4openEPKc", QiFileInputStream_open_hook, false);
