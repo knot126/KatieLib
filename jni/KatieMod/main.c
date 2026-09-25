@@ -18,9 +18,9 @@ typedef const char *(*ModuleInitFunc)(void);
 /* Sub-mod init functions */
 const char *KNInitLuaUpgrade(void);
 const char *KNInitLua(void);
-const char *KNDatabaseInit(void);
-const char *KNAntitamperInit(void);
-const char *KNOverlayInit(void);
+const char *KNInitDatabase(void);
+const char *KNInitAntitamper(void);
+const char *KNInitOverlay(void);
 const char *KNInitShutdown(void);
 const char *KNInitKeyboard(void);
 const char *KNInitEvents(void);
@@ -28,9 +28,9 @@ const char *KNInitEvents(void);
 ModuleInitFunc submod_init_functions[] = {
 	KNInitLuaUpgrade,
 	KNInitLua,
-	KNDatabaseInit,
-	KNAntitamperInit,
-	KNOverlayInit,
+	KNInitDatabase,
+	KNInitAntitamper,
+	KNInitOverlay,
 	KNInitShutdown,
 	KNInitKeyboard,
 	KNInitEvents,

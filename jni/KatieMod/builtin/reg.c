@@ -569,7 +569,7 @@ int knEnableProperties(lua_State *script) {
 	return 0;
 }
 
-const char *KNDatabaseInit(void) {
+const char *KNInitDatabase(void) {
 	const char *internal_path = gApp->activity->internalDataPath;
 	const char *base_path = "database.kn";
 	

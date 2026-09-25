@@ -23,7 +23,7 @@ void computeChecksum() {
 	free(data);
 }
 
-const char *KNAntitamperInit(void) {
+const char *KNInitAntitamper(void) {
 	YipHookFunction("_Z15computeChecksumRK8QiStringPc", computeChecksum, true);
 	
 	return NULL;
