@@ -10,14 +10,6 @@
 #include "lua_utils.h"
 #include "../util.h"
 
-#ifdef HTTP_ENABLE_MBEDTLS
-struct {
-	// bool allow_without_cert;
-	unsigned char *cert_data;
-	size_t cert_data_size;
-} gHttps;
-#endif
-
 typedef struct {
 	http_t *context;
 } knHttpContext;
@@ -141,11 +133,9 @@ int knHttpRequest(lua_State *script) {
 	size_t cert_size = 0;
 	const char *cert_data = lua_tolstring(script, 5, &cert_size);
 	
-	// DEPRECATED: In the future, we will not have a global cert and instead
-	// only have an argument containing certificate data.
 	http_buffer_t cert = {
-		.size = cert_data ? cert_size : gHttps.cert_data_size,
-		.data = cert_data ? (unsigned char*)cert_data : gHttps.cert_data,
+		.size = cert_size,
+		.data = (unsigned char*)cert_data,
 	};
 	
 	http_t *request = http_request(method, url, body, body_size, num_headers ? headers : NULL, num_headers, &cert, NULL);
@@ -404,119 +394,6 @@ int knHttpRelease(lua_State *script) {
 	return 0;
 }
 
-void *libNXArchive;
-const char *(*NXExtractArchiveFromBuffer)(const char *location, size_t size, const void *buf);
-
-int knHttpExtractNxArchive(lua_State *script) {
-	/**
-	 * errorMsg = knHttpExtractNxArchive(httpRequest, extractDir)
-	 * 
-	 * Extracts an NXArchive from the HTTP response data. Returns either false
-	 * on success or a string explaining the error on failure.
-	 */
-	
-	if (!libNXArchive) {
-		libNXArchive = dlopen("libNXArchive.so", RTLD_NOW | RTLD_GLOBAL);
-		
-		if (!libNXArchive) {
-			lua_pushstring(script, "nxarchive library not present");
-			return 1;
-		}
-		
-		NXExtractArchiveFromBuffer = dlsym(libNXArchive, "NXExtractArchiveFromBuffer");
-	}
-	
-	if (!NXExtractArchiveFromBuffer) {
-		lua_pushstring(script, "symbol 'NXExtractArchiveFromBuffer' not found");
-		return 1;
-	}
-	
-	if (lua_gettop(script) < 2) {
-		lua_pushstring(script, "not enough params");
-		return 1;
-	}
-	
-	knHttpContext *ctx = lua_touserdata(script, 1);
-	
-	if (!ctx || !ctx->context) {
-		lua_pushstring(script, "http context is null");
-		return 1;
-	}
-	
-	const char *dest = lua_tostring(script, 2);
-	
-	if (!dest) {
-		lua_pushstring(script, "dest is null");
-		return 1;
-	}
-	
-	const char *err = NXExtractArchiveFromBuffer(dest, ctx->context->response_size, ctx->context->response_data);
-	
-	if (err) {
-		lua_pushstring(script, err);
-	}
-	else {
-		lua_pushboolean(script, 0);
-	}
-	
-	return 1;
-}
-
-#ifdef HTTP_ENABLE_MBEDTLS
-int knHttpsCert(lua_State *L) {
-	/**
-	 * DEPRECATED: Please use certificate argument of knHttpRequest().
-	 */
-	
-	if (lua_gettop(L) == 0) {
-		free(gHttps.cert_data);
-		gHttps.cert_data = NULL;
-		gHttps.cert_data_size = 0;
-	}
-	
-	size_t cert_size;
-	const char *cert = lua_tolstring(L, 1, &cert_size);
-	
-	if (!cert) {
-		luaL_error(L, "Certifiate data is a nil value or not convertable to a string; if you loaded from an asset, maybe that asset doesn't exist?");
-	}
-	
-	unsigned char *new_cert_buf = malloc(cert_size);
-	
-	if (!new_cert_buf) {
-		luaL_error(L, "Could not allocate new cert buffer!");
-		return 0;
-	}
-	
-	memcpy(new_cert_buf, cert, cert_size);
-	free(gHttps.cert_data);
-	gHttps.cert_data = new_cert_buf;
-	gHttps.cert_data_size = cert_size;
-	
-	return 0;
-}
-
-int knHttpsNoCert(lua_State *L) {
-	/**
-	 * DEPRECATED:
-	 * Not useful since https requests will be not have certs checked by
-	 * default now. While this is not secure, HTTPS is only provided for
-	 * compatibility in KnShim anyway so it doessn't matter too much.
-	 */
-	
-	const char *magic = lua_tostring(L, 1);
-	
-	if (magic && !strcmp(magic, "The foxes whispher in your ear: \"Here lies dangerous code!\"")) {
-		// gHttps.allow_without_cert = true;
-	}
-	else {
-		return luaL_error(L, "Say the magic words!");
-	}
-	
-	return 0;
-}
-#endif
-
 int knEnableHttp(lua_State *script) {
 	lua_register(script, "knHttpRequest", knHttpRequest);
 	lua_register(script, "knHttpUpdate", knHttpUpdate);
@@ -527,11 +404,6 @@ int knEnableHttp(lua_State *script) {
 	lua_register(script, "knHttpError", knHttpError);
 	lua_register(script, "knHttpErrorCode", knHttpErrorCode);
 	lua_register(script, "knHttpRelease", knHttpRelease);
-	lua_register(script, "knHttpExtractNxArchive", knHttpExtractNxArchive);
-#ifdef HTTP_ENABLE_MBEDTLS
-	lua_register(script, "knHttpsCert", knHttpsCert);
-	lua_register(script, "knHttpsNoCert", knHttpsNoCert);
-#endif
 	lua_pushinteger(script, KN_HTTP_PENDING); lua_setglobal(script, "KN_HTTP_PENDING");
 	lua_pushinteger(script, KN_HTTP_DONE); lua_setglobal(script, "KN_HTTP_DONE");
 	lua_pushinteger(script, KN_HTTP_ERROR); lua_setglobal(script, "KN_HTTP_ERROR");
