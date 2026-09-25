@@ -33,7 +33,6 @@ ModuleInitFunc submod_init_functions[] = {
 	KNAntitamperInit,
 	KNOverlayInit,
 	KNInitShutdown,
-	KNInitNewAudio,
 	KNInitKeyboard,
 	KNInitEvents,
 	NULL,
