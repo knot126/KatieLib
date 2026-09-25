@@ -6,6 +6,7 @@ from datetime import datetime
 from pathlib import Path
 
 def is_outdated(src, dst):
+	if not os.path.exists(dst): return True
 	src_stat = os.stat(src)
 	dst_stat = os.stat(dst)
 	return src_stat.st_mtime > dst_stat.st_mtime
@@ -22,7 +23,7 @@ Options:
 # Regenerate version header
 if is_outdated("RELEASE", "jni/KatieMod/version.h"):
 	version = Path("RELEASE").read_text().strip()
-	new_data = f"#define SHIM_VERSION \"{version}\"\n"
+	new_data = f"#define SHIM_VERSION \"{version}\"\n#define SHIM_VERSION_INT {version}\n"
 	Path("jni/KatieMod/version.h").write_text(new_data)
 
 game = "smashhit" #if "--game" not in sys.argv else sys.argv[sys.argv.index("--game")+1]

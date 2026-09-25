@@ -1,1 +1,2 @@
 #define SHIM_VERSION "22"
+#define SHIM_VERSION_INT 22
