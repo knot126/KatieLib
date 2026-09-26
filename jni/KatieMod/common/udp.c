@@ -107,7 +107,7 @@ int knUdpSocketIndex(lua_State *L) {
 		return 1;
 	}
 	
-	if (!strcmp(key, "recieve")) {
+	if (!strcmp(key, "recieve") || !strcmp(key, "receive")) {
 		lua_pushcfunction(L, knUdpSocketRecieve);
 		return 1;
 	}
