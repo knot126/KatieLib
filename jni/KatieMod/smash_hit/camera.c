@@ -40,7 +40,7 @@ int knCameraPosOffset(lua_State *L) {
 	return 0;
 }
 
-static inline void quat_rotate(QiQuat *quat, float heading, float attitude, float bank) {
+static inline void quat_rotate(QiQuat *quat, float heading, float bank, float attitude) {
 	float c1 = cosf(heading);
 	float s1 = sinf(heading);
 	float c2 = cosf(attitude);
