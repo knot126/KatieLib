@@ -9,7 +9,7 @@
 #include <stdlib.h>
 #include <stdarg.h>
 #include "../util.h"
-#include "../builtin/lua_utils.h"
+#include "../common/lua_utils.h"
 
 #define USE_LUA_53 1
 

@@ -1,7 +1,7 @@
 #include <yiploader/yiploader.h>
 
 #include "log.h"
-#include "builtin/smashhit.h"
+#include "smash_hit/smashhit.h"
 
 /* Shim-wide globals. I have nowhere else to put these. */
 struct android_app *gApp;

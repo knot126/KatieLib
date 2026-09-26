@@ -8,7 +8,7 @@
 #include <string.h>
 #include <stdbool.h>
 
-#include "smashhit.h"
+#include "../smash_hit/smashhit.h"
 #include "../util.h"
 
 typedef struct KnMemoryOutputStream {

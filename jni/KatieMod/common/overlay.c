@@ -13,7 +13,7 @@
 #include "../extern/miniz.h"
 
 #include "../util.h"
-#include "smashhit.h"
+#include "../smash_hit/smashhit.h"
 
 /**
  * A single, abstract overlay. The actual backing implementation may be a

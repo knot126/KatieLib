@@ -6,7 +6,7 @@
 #include <android/log.h>
 
 #include "lua_utils.h"
-#include "smashhit.h"
+#include "../smash_hit/smashhit.h"
 #include "../util.h"
 
 #include "enablement.h"

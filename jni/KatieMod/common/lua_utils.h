@@ -3,7 +3,7 @@
 
 #include <stdarg.h>
 
-#include "smashhit.h"
+#include "../smash_hit/smashhit.h"
 
 #include "../lua/lua.h"
 #include "../lua/lualib.h"

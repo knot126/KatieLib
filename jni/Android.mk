@@ -18,30 +18,36 @@ LOCAL_MODULE    := Katie.smashhit
 LOCAL_SRC_FILES := KatieMod/mod_info.c \
 	KatieMod/main.c \
 	KatieMod/util.c \
-	KatieMod/builtin/events.c \
-	KatieMod/builtin/antitamper.c \
-	KatieMod/builtin/asset.c \
-	KatieMod/builtin/script.c \
-	KatieMod/builtin/log.c \
-	KatieMod/builtin/patching.c \
-	KatieMod/builtin/http.c \
-	KatieMod/builtin/string.c \
-	KatieMod/builtin/system.c \
-	KatieMod/builtin/reg.c \
-	KatieMod/builtin/files.c \
-	KatieMod/builtin/gamectl_smashhit.c \
-	KatieMod/builtin/overlay.c \
-	KatieMod/builtin/input.c \
-	KatieMod/builtin/draw.c \
-	KatieMod/builtin/pack.c \
-	KatieMod/builtin/isc.c \
-	KatieMod/builtin/shutdown.c \
-	KatieMod/builtin/udp.c \
-	KatieMod/builtin/lua_utils.c \
+	KatieMod/common/antitamper.c \
+	KatieMod/common/asset.c \
+	KatieMod/common/draw.c \
+	KatieMod/common/files.c \
+	KatieMod/common/http.c \
+	KatieMod/common/input.c \
+	KatieMod/common/isc.c \
+	KatieMod/common/log.c \
+	KatieMod/common/lua_utils.c \
+	KatieMod/common/overlay.c \
+	KatieMod/common/pack.c \
+	KatieMod/common/patching.c \
+	KatieMod/common/reg.c \
+	KatieMod/common/script.c \
+	KatieMod/common/shutdown.c \
+	KatieMod/common/string.c \
+	KatieMod/common/system.c \
+	KatieMod/common/udp.c \
+	KatieMod/extern/miniz.c \
 	KatieMod/lua/loader.c \
-	KatieMod/luaupgrade/luaupgrade.c \
-	KatieMod/new_audio/new_audio.c \
-	KatieMod/extern/miniz.c
+	KatieMod/lua_upgrade/lua_upgrade.c \
+	KatieMod/smash_hit/camera.c \
+	KatieMod/smash_hit/events.c \
+	KatieMod/smash_hit/frame_rate.c \
+	KatieMod/smash_hit/gamectl_smashhit.c \
+	KatieMod/smash_hit/java.c \
+	KatieMod/smash_hit/level.c \
+	KatieMod/smash_hit/player.c \
+	KatieMod/smash_hit/quicksave.c \
+	KatieMod/smash_hit/reload.c
 
 # Link against any extra libraries you might need here
 LOCAL_LDLIBS     := -llog -landroid -lGLESv2

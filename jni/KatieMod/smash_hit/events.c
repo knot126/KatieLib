@@ -1,5 +1,5 @@
 #include "../util.h"
-#include "lua_utils.h"
+#include "../common/lua_utils.h"
 #include <yiploader/yiploader.h>
 #include <stdbool.h>
 
