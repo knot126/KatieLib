@@ -16,5 +16,6 @@ const char *KNInitRegistry(void) {
 	StringSet_add(KN_SCRIPT_DRAW_FUNCS, "draw");
 	StringSet_add(KN_SCRIPT_DRAW_WORLD_FUNCS, "drawWorld");
 	StringSet_add(KN_SCRIPT_COMMAND_HANDLERS, "handleCommand");
-	StringSet_add(KN_POWERUPS, "tick");
+	
+	return NULL;
 }
