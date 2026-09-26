@@ -5,7 +5,7 @@
 #include <yiploader/yiploader.h>
 #include "../util.h"
 #include "lua_utils.h"
-#include "smashhit.h"
+#include "../smash_hit/smashhit.h"
 
 // const char * const KN_MENU = "com.mediocre.smashhit.menu";
 // const char * const KN_MOVIE = "com.mediocre.smashhit.movie";

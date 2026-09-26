@@ -31,7 +31,7 @@
 #include <stdlib.h>
 #include <sys/mman.h>
 #include <yiploader/yiploader.h>
-#include "builtin/smashhit.h"
+#include "smash_hit/smashhit.h"
 
 #ifdef GRANNY
 #define KN_GAME_STRING "grannysmith"

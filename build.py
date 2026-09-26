@@ -29,8 +29,8 @@ if is_outdated("RELEASE", "jni/KatieMod/version.h"):
 game = "smashhit" #if "--game" not in sys.argv else sys.argv[sys.argv.index("--game")+1]
 
 # Regenerate module enablement header
-if is_outdated("jni/KatieMod/builtin/modules.txt", "jni/KatieMod/builtin/enablement.h"):
-	with open("jni/KatieMod/builtin/modules.txt", "r") as f:
+if is_outdated("jni/KatieMod/common/modules.txt", "jni/KatieMod/common/enablement.h"):
+	with open("jni/KatieMod/common/modules.txt", "r") as f:
 		enum = ""
 		enables = ""
 		pushenum = ""
@@ -46,7 +46,7 @@ if is_outdated("jni/KatieMod/builtin/modules.txt", "jni/KatieMod/builtin/enablem
 				pushenum += f"\tknLuaPushEnum(script, KN_{name.upper()}_BIT);\\\n"
 				i += 1
 		
-		Path("jni/KatieMod/builtin/enablement.h").write_text(f"""enum {{
+		Path("jni/KatieMod/common/enablement.h").write_text(f"""enum {{
 {enum}}};
 
 #define KNSHIM_ENABLE() \\
