@@ -21,7 +21,7 @@ int knDrawLine(lua_State *L) {
 
 int knDrawRectangle(lua_State *L) {
 	QiVec2 a = knLuaToVec2(L, 1);
-	QiVec2 b = knLuaToVec2(L, 1);
+	QiVec2 b = knLuaToVec2(L, 2);
 	QiColor color = knLuaToColor(L, 3);
 	Gfx_drawRectangle(gGame->gfx, &a, &b, &color);
 	return 0;
