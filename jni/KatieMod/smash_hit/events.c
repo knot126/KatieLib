@@ -109,6 +109,36 @@ void Level_enterRoom_hook(Level *this, Room *room) {
 	Level_enterRoom(this, room);
 }
 
+void (*Player_loadCheckpoint)(Player *this, int checkpointIndex);
+
+void Player_loadCheckpoint_hook(Player *this, int checkpointIndex) {
+	lua_State *L = getActiveScript(gGame);
+	int result = 0;
+	
+	if (L) {
+		result = knLuaCallBool(L, "onLoadCheckpoint", KAT_INT, checkpointIndex, KAT_END);
+	}
+	
+	if (!result) {
+		Player_loadCheckpoint(this, checkpointIndex);
+	}
+}
+
+void (*Player_reportCheckpoint)(Player *this, int checkpointIndex);
+
+void Player_reportCheckpoint_hook(Player *this, int checkpointIndex) {
+	lua_State *L = getActiveScript(gGame);
+	int result = 0;
+	
+	if (L) {
+		result = knLuaCallBool(L, "onReportCheckpoint", KAT_INT, checkpointIndex, KAT_END);
+	}
+	
+	if (!result) {
+		Player_reportCheckpoint(this, checkpointIndex);
+	}
+}
+
 const char *KNInitEvents(void) {
 	Game_frame = YipHookFunction("_ZN4Game5frameEv", Game_frame_hook, false);
 	Level_handleInput = YipHookFunction("_ZN5Level11handleInputERK7QiInput", Level_handleInput_hook, false);
@@ -116,5 +146,6 @@ const char *KNInitEvents(void) {
 	Level_streakAbort = YipHookFunction("_ZN5Level11streakAbortEi", Level_streakAbort_hook, false);
 	Level_streakInc = YipHookFunction("_ZN5Level9streakIncEi", Level_streakInc_hook, false);
 	Level_enterRoom = YipHookFunction("_ZN5Level9enterRoomEP4Room", Level_enterRoom_hook, false);
+	Player_loadCheckpoint = YipHookFunction("_ZN6Player14loadCheckpointEi", Player_loadCheckpoint_hook, false);
 	return NULL;
 }
