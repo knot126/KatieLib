@@ -210,7 +210,9 @@ typedef struct Player {
 	char _unknown0[0x7f4];
 	int balls;
 	int streak;
-	char _unknown1[0xb0];
+	int mpBalls[2];
+	int mpStreak[2];
+	char _unknown1[0xa0];
 	int mode;
 } Player;
 
@@ -231,7 +233,9 @@ typedef struct Player {
 	char _unknown0[0x8bc];
 	int balls;
 	int streak;
-	char _unknown1[0xb8];
+	int mpBalls[2];
+	int mpStreak[2];
+	char _unknown1[0xa8];
 	int mode;
 } Player;
 
