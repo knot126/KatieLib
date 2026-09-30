@@ -10,8 +10,6 @@ typedef struct StringSet {
 } StringSet;
 
 uint32_t StringSet_add(StringSet *self, const char *str) {
-	// printf("add(%s)\n", str);
-	
 	if (self->length >= self->capacity) {
 		uint32_t new_cap = 2 * self->capacity + 1;
 		char **new_elems = realloc(self->elements, sizeof *self->elements * new_cap);
@@ -71,8 +69,6 @@ uint32_t StringSet_add(StringSet *self, const char *str) {
 		}
 		
 		// This just inserts it
-		// printf("Insert at %d\n", index);
-		
 		memmove(&self->elements[index + 1], &self->elements[index], (self->length - index) * sizeof *self->elements);
 		self->elements[index] = new_str;
 		self->length++;
@@ -89,16 +85,16 @@ void StringSet_forEach(StringSet *self, void *context, StringSetPredicate predic
 	}
 }
 
-void StringSet_initWithElement(StringSet *self, const char * const *array, uint32_t length) {
-	
-}
-
 void StringSet_initWithElements(StringSet *self, const char * const *array, uint32_t length) {
 	memset(self, 0, sizeof *self);
 	
 	for (uint32_t i = 0; i < length; i++) {
 		StringSet_add(self, array[i]);
 	}
+}
+
+void StringSet_initWithElement(StringSet *self, const char *element) {
+	StringSet_initWithElements(self, &element, 1);
 }
 
 #ifdef STRING_SET_TEST

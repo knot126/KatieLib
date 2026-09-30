@@ -6,7 +6,7 @@
 #include <math.h>
 #include <GLES2/gl2.h>
 #include "../util.h"
-#include "lua_utils.h"
+#include "../common/lua_utils.h"
 
 void (*Gfx_drawLine)(Gfx *this,QiVec3 *pointA,QiVec3 *pointB,QiColor *colour,float param_5);
 void (*Gfx_drawRectangle)(Gfx *this,QiVec2 *param_1,QiVec2 *param_2,QiColor *param_3);

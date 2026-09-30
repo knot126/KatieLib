@@ -4,7 +4,7 @@
  */
 
 #include <yiploader/yiploader.h>
-#include "../smash_hit/smashhit.h"
+#include "smashhit.h"
 #include "../util.h"
 
 void (*QiScript_shutdown)(QiScript *this);

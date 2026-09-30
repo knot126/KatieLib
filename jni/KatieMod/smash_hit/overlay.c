@@ -9,11 +9,11 @@
 #include <stdbool.h>
 #include <sys/stat.h>
 
-#include "lua_utils.h"
+#include "../common/lua_utils.h"
 #include "../extern/miniz.h"
 
 #include "../util.h"
-#include "../smash_hit/smashhit.h"
+#include "smashhit.h"
 
 /**
  * A single, abstract overlay. The actual backing implementation may be a
