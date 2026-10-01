@@ -7,8 +7,11 @@
 #include "smashhit.h"
 #include "../util.h"
 
-QiVec3 cameraPosOffset = {};
-QiQuat cameraRotOffset = {};
+QiVec3 cameraPos = {};
+QiQuat cameraRot = {};
+
+bool cameraPosAbsolute;
+bool cameraRotAbsolute;
 
 void (*QiViewport_setCameraPos)(QiViewport *viewport, QiVec3 *pos);
 void (*QiViewport_setCameraRot)(QiViewport *viewport, QiQuat *rot);
@@ -17,26 +20,43 @@ QiQuat (*QiQuat_compose)(QiQuat *self, QiQuat *other);
 
 void QiViewport_setCameraPos_hook(QiViewport *viewport, QiVec3 *pos) {
 	QiVec3 new_pos;
-	new_pos.x = pos->x + cameraPosOffset.x;
-	new_pos.y = pos->y + cameraPosOffset.y;
-	new_pos.z = pos->z + cameraPosOffset.z;
+	
+	if (cameraPosAbsolute) {
+		new_pos = cameraPos;
+	}
+	else {
+		new_pos.x = pos->x + cameraPos.x;
+		new_pos.y = pos->y + cameraPos.y;
+		new_pos.z = pos->z + cameraPos.z;
+	}
+	
 	QiViewport_setCameraPos(viewport, &new_pos);
 }
 
 void QiViewport_setCameraRot_hook(QiViewport *viewport, QiQuat *rot) {
-	QiQuat new_rot = QiQuat_compose(rot, &cameraRotOffset);
+	QiQuat new_rot;
+	
+	if (cameraRotAbsolute) {
+		new_rot = cameraRot;
+	}
+	else {
+		new_rot = QiQuat_compose(rot, &cameraRot);
+	}
+	
 	viewport->cameraRot = new_rot;
 	QiViewport_updateModelview(viewport);
 }
 
-int knCameraPosOffset(lua_State *L) {
+int knCameraPos(lua_State *L) {
 	if (!QiViewport_setCameraPos) {
 		QiViewport_setCameraPos = YipHookFunction("_ZN10QiViewport12setCameraPosERK6QiVec3", QiViewport_setCameraPos_hook, false);
 	}
 	
-	cameraPosOffset.x = lua_tonumber(L, 1);
-	cameraPosOffset.y = lua_tonumber(L, 2);
-	cameraPosOffset.z = lua_tonumber(L, 3);
+	cameraPos.x = lua_tonumber(L, 1);
+	cameraPos.y = lua_tonumber(L, 2);
+	cameraPos.z = lua_tonumber(L, 3);
+	cameraPosAbsolute = lua_toboolean(L, 4);
+	
 	return 0;
 }
 
@@ -54,7 +74,7 @@ static inline void quat_rotate(QiQuat *quat, float heading, float bank, float at
 	quat->z = (-s1 * s3 + c1 * s2 * c3 +s2) / w4 ;
 }
 
-int knCameraRotOffset(lua_State *L) {
+int knCameraRot(lua_State *L) {
 	if (!QiViewport_setCameraRot) {
 		QiViewport_setCameraRot = YipHookFunction("_ZN10QiViewport12setCameraRotERK6QiQuat", QiViewport_setCameraRot_hook, true);
 		QiQuat_compose = YipLookupSymbol("_ZNK6QiQuatmlERKS_");
@@ -63,16 +83,17 @@ int knCameraRotOffset(lua_State *L) {
 	
 	QiQuat offset;
 	quat_rotate(&offset, lua_tonumber(L, 1), lua_tonumber(L, 2), lua_tonumber(L, 3));
-	cameraRotOffset = offset;
+	cameraRot = offset;
+	cameraRotAbsolute = lua_toboolean(L, 4);
 	return 0;
 }
 
-float wantFov;
+float wantedFov;
 
 void (*QiViewport_setMode3D)(QiViewport *this, float fov, float near, float far);
 
 void QiViewport_setMode3D_hook(QiViewport *this, float fov, float near, float far) {
-	QiViewport_setMode3D(this, wantFov == 0.0f ? fov : wantFov, near, far);
+	QiViewport_setMode3D(this, wantedFov == 0.0f ? fov : wantedFov, near, far);
 }
 
 int knCameraFov(lua_State *L) {
@@ -80,14 +101,14 @@ int knCameraFov(lua_State *L) {
 		QiViewport_setMode3D = YipHookFunction("_ZN10QiViewport9setMode3DEfff", QiViewport_setMode3D_hook, false);
 	}
 	
-	wantFov = lua_tonumber(L, 1);
+	wantedFov = lua_tonumber(L, 1);
 	
 	return 0;
 }
 
 int knEnableCamera(lua_State *script) {
-	knRegisterFunc(script, knCameraPosOffset);
-	knRegisterFunc(script, knCameraRotOffset);
+	knRegisterFunc(script, knCameraPos);
+	knRegisterFunc(script, knCameraRot);
 	knRegisterFunc(script, knCameraFov);
 	
 	return 0;
