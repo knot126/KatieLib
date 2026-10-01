@@ -51,7 +51,7 @@ int knCall(lua_State *L) {
 				return luaL_error(L, "scene index %d is not loaded", script_id);
 			}
 			
-			M = *scene->script.state;
+			M = scene->script.scriptInternal->state;
 			break;
 		}
 		case LUA_TLIGHTUSERDATA: {

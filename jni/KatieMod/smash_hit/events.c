@@ -4,11 +4,11 @@
 #include <stdbool.h>
 
 lua_State *getActiveScript(Game *this) {
-	if (this->hudScene && *this->hudScene->script.state) {
-		return *this->hudScene->script.state;
+	if (this->hudScene && this->hudScene->script.scriptInternal->state) {
+		return this->hudScene->script.scriptInternal->state;
 	}
-	else if (this->menuScene && *this->menuScene->script.state) {
-		return *this->menuScene->script.state;
+	else if (this->menuScene && this->menuScene->script.scriptInternal->state) {
+		return this->menuScene->script.scriptInternal->state;
 	}
 	else {
 		return NULL;

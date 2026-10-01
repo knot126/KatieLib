@@ -288,7 +288,7 @@ typedef struct LuaOverlayState {
 } LuaOverlayState;
 
 FILE *LuaOverlayLoad(Overlay *this, const char *path) {
-	lua_State *L = *gGame->menuScene->script.state;
+	lua_State *L = gGame->menuScene->script.scriptInternal->state;
 	const char *function_name = ((LuaOverlayState *) this->context)->function_name;
 	
 	lua_getglobal(L, function_name);

@@ -55,16 +55,20 @@ typedef struct QiString {
 	char cached[QI_STRING_LOCAL_SIZE];
 } QiString;
 
-typedef struct QiScript {
-	void *_unknown0;
-	void *fixed_chunk_allocator;
-	lua_State* *state; // there is more this points to but idrc atm
-} QiScript;
+typedef struct QiFixedChunkAllocator {
+	/* To be filled... */
+} QiFixedChunkAllocator;
 
-typedef struct Script {
-	QiScript *script;
-	// incomplete
-} Script;
+typedef struct QiScript_Internal {
+	lua_State *state;
+	QiArray unknown;
+} QiScript_Internal;
+
+typedef struct QiScript {
+	void *userData;
+	QiFixedChunkAllocator *fixedChunkAllocator;
+	QiScript_Internal *scriptInternal;
+} QiScript;
 
 typedef struct _ResManHashTable {
 	int size;
@@ -85,6 +89,16 @@ typedef struct ResMan {
 	QiString additionalPath;
 	QiString u6;
 } ResMan;
+
+typedef struct Script {
+	QiScript *script;
+	QiFixedChunkAllocator *allocator;
+	void *unknown;
+	QiArray objects;
+	ResMan *resMan;
+	bool active;
+	// incomplete
+} Script;
 
 typedef struct Scene {
 	QiString path;

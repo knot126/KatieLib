@@ -77,6 +77,15 @@ uint32_t StringSet_add(StringSet *self, const char *str) {
 	}
 }
 
+const char *StringSet_index(StringSet *self, uint32_t index) {
+	if (index < self->length) {
+		return self->elements[index];
+	}
+	else {
+		return NULL;
+	}
+}
+
 typedef void (StringSetPredicate)(void *context, const char *string);
 
 void StringSet_forEach(StringSet *self, void *context, StringSetPredicate predicate) {

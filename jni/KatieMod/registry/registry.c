@@ -9,15 +9,15 @@
 StringSet registries[KN_NUM_REGISTRIES];
 
 static inline void Registry_init(int32_t id, const char *firstValue) {
-	StringSet_initWithElements(registries[id], firstValue);
+	StringSet_initWithElement(registries[id], firstValue);
 }
 
 void Registry_add(int32_t id, const char *key) {
 	StringSet_add(registries[id], key);
 }
 
-void Registry_forEach(int32_t id, void *context, RegistryIterator iterator) {
-	StringSet_forEach(registries[id], context, (void *) iterator);
+const char *Registry_index(int32_t id, uint32_t index) {
+	return StringSet_index(registries[id], index);
 }
 
 const char *KNInitRegistry(void) {
