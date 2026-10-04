@@ -15,30 +15,49 @@ lua_State *getActiveScript(Game *this) {
 	}
 }
 
-void callEventFunction(Game *this, const char *function_name) {
-	#define CALL(ERRFUNC) if (lua_pcall(script, 0, 0, 0)) { \
-		const char *err = lua_tostring(script, -1); \
-		ERRFUNC; \
-		lua_pop(script, 1); \
-	}
-	
+bool callEventFunctionInternal(Game *this, const char *name, va_list args) {
 	lua_State *script = getActiveScript(this);
+	bool result = false;
 	
 	if (script) {
-		lua_getglobal(script, function_name);
+		lua_getglobal(script, name);
 		
 		switch (lua_type(script, -1)) {
+			// Handle one function
 			case LUA_TFUNCTION: {
-				CALL(LogE("Error in %s: %s", function_name, err));
+				if (knLuaCallIV(script, -1, 1, args)) {
+					const char *err = lua_tostring(script, -1);
+					LogE("Error in %s: %s", name, err);
+				}
+				else {
+					result = lua_toboolean(script, -1);
+				}
+				
+				lua_pop(script, 1);
 				break;
 			}
 			case LUA_TTABLE: {
-				int n = 0;
 				lua_pushnil(script); // push first key
 				
 				while (lua_next(script, -2) != 0) {
-					n++;
-					CALL(LogE("Error in %s[%d]: %s", function_name, n, err));
+					va_list xargs;
+					va_copy(xargs, args);
+					
+					if (knLuaCallIV(script, -1, 1, xargs)) {
+						const char *err = lua_tostring(script, -1);
+						LogE("Error in %s: %s", name, err);
+					}
+					else {
+						result = lua_toboolean(script, -1);
+					}
+					
+					lua_pop(script, 1); // pop result
+					va_end(xargs);
+					
+					if (result) {
+						lua_pop(script, 1); // pop the key, since lua won't use it
+						break;
+					}
 				}
 				
 				lua_pop(script, 1); // pop table
@@ -46,37 +65,35 @@ void callEventFunction(Game *this, const char *function_name) {
 				break;
 			}
 			default: {
-				lua_pop(script, 1);
+				lua_pop(script, 1); // pop nil/other value
+				break;
 			}
 		}
 	}
 	
-	#undef CALL
+	return result;
 }
 
-bool callEventFunctionBool(Game *this, const char *function_name) {
-	lua_State *script = getActiveScript(this);
-	
-	if (script) {
-		return knLuaCallBool(script, function_name, KAT_END);
-	}
-	else {
-		return false;
-	}
+bool callEventFunction(Game *this, const char *name, ...) {
+	va_list args;
+	va_start(args, name);
+	bool res = callEventFunctionInternal(this, name, args);
+	va_end(args);
+	return res;
 }
 
 void (*Game_frame)(Game *this);
 
 void Game_frame_hook(Game *this) {
-	callEventFunction(this, "onFrameStart");
+	callEventFunction(this, "onFrameStart", KAT_END);
 	Game_frame(this);
-	callEventFunction(this, "onFrameEnd");
+	callEventFunction(this, "onFrameEnd", KAT_END);
 }
 
 void (*Level_handleInput)(Level *this, QiInput *inputSource);
 
 void Level_handleInput_hook(Level *this, QiInput *inputSource) {
-	bool override = callEventFunctionBool(gGame, "onHandleInput");
+	bool override = callEventFunction(gGame, "onHandleInput", KAT_END);
 	
 	if (!override) {
 		Level_handleInput(this, inputSource);
@@ -86,14 +103,9 @@ void Level_handleInput_hook(Level *this, QiInput *inputSource) {
 void (*Level_hitSomething)(Level *this, int playerIndex);
 
 void Level_hitSomething_hook(Level *this, int playerIndex) {
-	lua_State *L = getActiveScript(gGame);
-	int result = 0;
+	bool override = callEventFunction(gGame, "onHitSomething", KAT_INT, playerIndex, KAT_END);
 	
-	if (L) {
-		result = knLuaCallBool(L, "onHitSomething", KAT_INT, playerIndex, KAT_END);
-	}
-	
-	if (!result) {
+	if (!override) {
 		Level_hitSomething(this, playerIndex);
 	}
 }
@@ -101,14 +113,9 @@ void Level_hitSomething_hook(Level *this, int playerIndex) {
 void (*Level_streakAbort)(Level *this, int playerIndex);
 
 void Level_streakAbort_hook(Level *this, int playerIndex) {
-	lua_State *L = getActiveScript(gGame);
-	int result = 0;
+	bool override = callEventFunction(gGame, "onStreakAbort", KAT_INT, playerIndex, KAT_END);
 	
-	if (L) {
-		result = knLuaCallBool(L, "onStreakAbort", KAT_INT, playerIndex, KAT_END);
-	}
-	
-	if (!result) {
+	if (!override) {
 		Level_streakAbort(this, playerIndex);
 	}
 }
@@ -116,14 +123,9 @@ void Level_streakAbort_hook(Level *this, int playerIndex) {
 void (*Level_streakInc)(Level *this, int playerIndex);
 
 void Level_streakInc_hook(Level *this, int playerIndex) {
-	lua_State *L = getActiveScript(gGame);
-	int result = 0;
+	bool override = callEventFunction(gGame, "onStreakInc", KAT_INT, playerIndex, KAT_END);
 	
-	if (L) {
-		result = knLuaCallBool(L, "onStreakInc", KAT_INT, playerIndex, KAT_END);
-	}
-	
-	if (!result) {
+	if (!override) {
 		Level_streakInc(this, playerIndex);
 	}
 }
@@ -131,11 +133,7 @@ void Level_streakInc_hook(Level *this, int playerIndex) {
 void (*Level_enterRoom)(Level *this, Room *room);
 
 void Level_enterRoom_hook(Level *this, Room *room) {
-	lua_State *L = getActiveScript(gGame);
-	
-	if (L) {
-		knLuaCallVoid(L, "onEnterRoom", KAT_STR, room->name.data ? room->name.data : room->name.cached, KAT_END);
-	}
+	callEventFunction(gGame, "onEnterRoom", KAT_STR, room->name.data ? room->name.data : room->name.cached, KAT_END);
 	
 	Level_enterRoom(this, room);
 }
@@ -143,14 +141,9 @@ void Level_enterRoom_hook(Level *this, Room *room) {
 void (*Player_loadCheckpoint)(Player *this, int checkpointIndex);
 
 void Player_loadCheckpoint_hook(Player *this, int checkpointIndex) {
-	lua_State *L = getActiveScript(gGame);
-	int result = 0;
+	bool override = callEventFunction(gGame, "onLoadCheckpoint", KAT_INT, checkpointIndex, KAT_END);
 	
-	if (L) {
-		result = knLuaCallBool(L, "onLoadCheckpoint", KAT_INT, checkpointIndex, KAT_END);
-	}
-	
-	if (!result) {
+	if (!override) {
 		Player_loadCheckpoint(this, checkpointIndex);
 	}
 }
@@ -158,12 +151,7 @@ void Player_loadCheckpoint_hook(Player *this, int checkpointIndex) {
 void (*Player_reportCheckpoint)(Player *this, int checkpointIndex);
 
 void Player_reportCheckpoint_hook(Player *this, int checkpointIndex) {
-	lua_State *L = getActiveScript(gGame);
-	int result = 0;
-	
-	if (L) {
-		result = knLuaCallBool(L, "onReportCheckpoint", KAT_INT, checkpointIndex, KAT_END);
-	}
+	bool result = callEventFunction(gGame, "onReportCheckpoint", KAT_INT, checkpointIndex, KAT_END);
 	
 	if (!result) {
 		Player_reportCheckpoint(this, checkpointIndex);
@@ -178,5 +166,6 @@ const char *KNInitEvents(void) {
 	Level_streakInc = YipHookFunction("_ZN5Level9streakIncEi", Level_streakInc_hook, false);
 	Level_enterRoom = YipHookFunction("_ZN5Level9enterRoomEP4Room", Level_enterRoom_hook, false);
 	Player_loadCheckpoint = YipHookFunction("_ZN6Player14loadCheckpointEi", Player_loadCheckpoint_hook, false);
+	Player_reportCheckpoint = YipHookFunction("_ZN6Player16reportCheckpointEi", Player_reportCheckpoint_hook, false);
 	return NULL;
 }
