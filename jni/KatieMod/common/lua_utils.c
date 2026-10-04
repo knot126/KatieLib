@@ -92,49 +92,8 @@ void knLuaCopyIndex(lua_State *L, int l, lua_State *M) {
 	}
 }
 
-/*
-int knLuaCallByName(lua_State *L, const char *function_name) {
-	lua_getglobal(L, function_name);
-	
-	if (!lua_isfunction(L, -1)) {
-		lua_pop(L, 1);
-		return 0;
-	}
-	
-	if (lua_pcall(L, 0, 0, 0) == 0) {
-		return 1;
-	}
-	else {
-		LogE("Error in %s: %s", function_name, lua_tostring(L, -1));
-		lua_pop(L, 1);
-		return 0;
-	}
-}
-
-int knLuaCallByNameBool(lua_State *L, const char *function_name) {
-	lua_getglobal(L, function_name);
-	
-	if (!lua_isfunction(L, -1)) {
-		lua_pop(L, 1);
-		return 0;
-	}
-	
-	if (lua_pcall(L, 0, 1, 0) == 0) {
-		int value = lua_toboolean(L, -1);
-		lua_pop(L, 1);
-		return value;
-	}
-	else {
-		LogE("Error in %s: %s", function_name, lua_tostring(L, -1));
-		lua_pop(L, 1);
-		return 0;
-	}
-}*/
-
-static int knLuaCallV(lua_State *L, const char *func, int retvals, va_list v) {
-	lua_getglobal(L, func);
-	
-	int is_func = lua_isfunction(L, -1);
+int knLuaCallIV(lua_State *L, int index, int retvals, va_list v) {
+	int is_func = lua_isfunction(L, index);
 	int arg_count = 0;
 	
 	while (1) {
@@ -171,6 +130,11 @@ static int knLuaCallV(lua_State *L, const char *func, int retvals, va_list v) {
 	}
 	
 	return lua_pcall(L, arg_count, retvals, 0);
+}
+
+int knLuaCallV(lua_State *L, const char *func, int retvals, va_list v) {
+	lua_getglobal(L, func);
+	return knLuaCallIV(L, -1, retvals, v);
 }
 
 void knLuaCallVoid(lua_State *L, const char *func, ...) {

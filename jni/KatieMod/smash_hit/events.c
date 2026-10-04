@@ -16,11 +16,42 @@ lua_State *getActiveScript(Game *this) {
 }
 
 void callEventFunction(Game *this, const char *function_name) {
+	#define CALL(ERRFUNC) if (lua_pcall(script, 0, 0, 0)) { \
+		const char *err = lua_tostring(script, -1); \
+		ERRFUNC; \
+		lua_pop(script, 1); \
+	}
+	
 	lua_State *script = getActiveScript(this);
 	
 	if (script) {
-		knLuaCallVoid(script, function_name, KAT_END);
+		lua_getglobal(script, function_name);
+		
+		switch (lua_type(script, -1)) {
+			case LUA_TFUNCTION: {
+				CALL(LogE("Error in %s: %s", function_name, err));
+				break;
+			}
+			case LUA_TTABLE: {
+				int n = 0;
+				lua_pushnil(script); // push first key
+				
+				while (lua_next(script, -2) != 0) {
+					n++;
+					CALL(LogE("Error in %s[%d]: %s", function_name, n, err));
+				}
+				
+				lua_pop(script, 1); // pop table
+				
+				break;
+			}
+			default: {
+				lua_pop(script, 1);
+			}
+		}
 	}
+	
+	#undef CALL
 }
 
 bool callEventFunctionBool(Game *this, const char *function_name) {

@@ -14,6 +14,8 @@ QiVec3 knLuaToVec3(lua_State *L, int index);
 QiColor knLuaToColor(lua_State *L, int index);
 void knLuaPushVec2(lua_State *L, QiVec2 v);
 void knLuaCopyIndex(lua_State *L, int l, lua_State *M);
+int knLuaCallIV(lua_State *L, int index, int retvals, va_list v);
+int knLuaCallV(lua_State *L, const char *func, int retvals, va_list v);
 void knLuaCallVoid(lua_State *L, const char *func, ...);
 int knLuaCallBool(lua_State *L, const char *func, ...);
 int knPopBool(lua_State *L);
