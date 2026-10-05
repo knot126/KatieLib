@@ -17,6 +17,7 @@ lua_State *getActiveScript(Game *this) {
 
 bool callEventFunctionInternal(Game *this, const char *name, va_list args) {
 	lua_State *script = getActiveScript(this);
+	// const int initial_gettop = lua_gettop(script);
 	bool result = false;
 	
 	if (script) {
@@ -25,6 +26,8 @@ bool callEventFunctionInternal(Game *this, const char *name, va_list args) {
 		switch (lua_type(script, -1)) {
 			// Handle one function
 			case LUA_TFUNCTION: {
+				// LogI("%s is LUA_TFUNCTION", name);
+				
 				if (knLuaCallIV(script, -1, 1, args)) {
 					const char *err = lua_tostring(script, -1);
 					LogE("Error in %s: %s", name, err);
@@ -37,6 +40,7 @@ bool callEventFunctionInternal(Game *this, const char *name, va_list args) {
 				break;
 			}
 			case LUA_TTABLE: {
+// #if 1
 				lua_pushnil(script); // push first key
 				
 				while (lua_next(script, -2) != 0) {
@@ -59,9 +63,9 @@ bool callEventFunctionInternal(Game *this, const char *name, va_list args) {
 						break;
 					}
 				}
+// #endif
 				
 				lua_pop(script, 1); // pop table
-				
 				break;
 			}
 			default: {
@@ -70,6 +74,13 @@ bool callEventFunctionInternal(Game *this, const char *name, va_list args) {
 			}
 		}
 	}
+	
+// 	const int final_gettop = lua_gettop(script);
+// 	
+// 	if (final_gettop != initial_gettop) {
+// 		LogF("callEventFunctionInternal: stack ended unbalanced! (%d != %d)", final_gettop, initial_gettop);
+// 		abort();
+// 	}
 	
 	return result;
 }
