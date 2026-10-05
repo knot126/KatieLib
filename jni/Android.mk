@@ -36,6 +36,7 @@ LOCAL_SRC_FILES := KatieMod/mod_info.c \
 	KatieMod/smash_hit/antitamper.c \
 	KatieMod/smash_hit/asset.c \
 	KatieMod/smash_hit/camera.c \
+	KatieMod/smash_hit/coexist.c \
 	KatieMod/smash_hit/draw.c \
 	KatieMod/smash_hit/events.c \
 	KatieMod/smash_hit/frame_rate.c \

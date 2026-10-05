@@ -24,6 +24,7 @@ const char *KNInitOverlay(void);
 const char *KNInitShutdown(void);
 const char *KNInitKeyboard(void);
 const char *KNInitEvents(void);
+const char *KNInitCoexistance(void);
 
 ModuleInitFunc submod_init_functions[] = {
 	KNInitLuaUpgrade,
@@ -34,6 +35,7 @@ ModuleInitFunc submod_init_functions[] = {
 	KNInitShutdown,
 	KNInitKeyboard,
 	KNInitEvents,
+	KNInitCoexistance,
 	NULL,
 };
 
