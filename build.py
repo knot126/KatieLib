@@ -55,7 +55,13 @@ if is_outdated("jni/KatieMod/common/modules.txt", "jni/KatieMod/common/enablemen
 #define KNSHIM_PUSH_ENABLE_ENUM() \\
 {pushenum}""")
 
-status = os.system(f"ndk-build")
+if "--clean" in sys.argv:
+	status = os.system(f"ndk-build clean")
+	
+	if not status:
+		status = os.system(f"bear -- ndk-build")
+else:
+	status = os.system(f"ndk-build")
 
 if not status:
 	# for arch in {"armeabi-v7a", "arm64-v8a"}:

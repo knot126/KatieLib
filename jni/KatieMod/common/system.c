@@ -113,5 +113,19 @@ int knEnableSystem(lua_State *script) {
 	knRegisterFunc(script, knAccquireMulticastLock);
 	knRegisterFunc(script, knInclude);
 	
+	luaL_dostring(script,
+		"__KN_LOADED_MODULES = {}\n"
+		"function knInstall(module)\n"
+		"    if init==nil then error('Main script not loaded while trying to install ' .. module .. '.') end\n"
+		"    for i, v in ipairs(__KN_LOADED_MODULES) do if module == v then return end end\n"
+		"    knInclude('libraries/' .. module .. '.lua')\n"
+		"    __KN_LOADED_MODULES[#__KN_LOADED_MODULES + 1] = module\n"
+		"end\n"
+		"function knRequire(module)\n"
+		"    for i, v in ipairs(__KN_LOADED_MODULES) do if module == v then return end end\n"
+		"    error('Required module ' .. module .. ' is not loaded.')\n"
+		"end\n"
+	);
+	
 	return 0;
 }

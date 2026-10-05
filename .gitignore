@@ -1,6 +1,8 @@
+compile_commands.json
 *.o
 *.so
 *.log
 *.zip
+*.tmp
 obj/
 libs/

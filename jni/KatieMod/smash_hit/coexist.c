@@ -9,7 +9,6 @@
 #include "../common/lua_utils.h"
 #include <yiploader/yiploader.h>
 #include "smashhit.h"
-#include <stdbool.h>
 
 #define L (this->scriptInternal->state)
 #define S(qs) ((qs)->data ? (qs)->data : (qs)->cached)
