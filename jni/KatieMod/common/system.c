@@ -78,7 +78,7 @@ int knInclude(lua_State *script) {
 	size_t size = 0;
 	
 	if (!path) {
-		return luaL_error(script, "path is null or not a string");
+		return luaL_error(script, "path to script is null or not a string");
 	}
 	
 	bool success = KNLoadAsset(path, (void**)&data, &size);
@@ -96,7 +96,7 @@ int knInclude(lua_State *script) {
 		}
 	}
 	else {
-		return luaL_error(script, "failed to load script asset %s", path);
+		return luaL_error(script, "failed to load script %s", path);
 	}
 	
 	return lua_gettop(script) - 1;
