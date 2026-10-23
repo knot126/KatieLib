@@ -7,6 +7,7 @@
 
 #include <sys/types.h>
 #include <sys/socket.h>
+#include <sys/ioctl.h>
 #include <netinet/ip.h>
 #include <arpa/inet.h>
 #include <unistd.h>
@@ -14,6 +15,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdbool.h>
+#include <poll.h>
 
 #ifndef KUDP_MAX_SIZE
 #define KUDP_MAX_SIZE 65507
@@ -35,9 +37,30 @@ typedef struct kudp_socket {
 	kudp_buffer buffer;
 } kudp_socket;
 
+/**
+ * Open a new socket and bind to a port and address and port if address is not
+ * null.
+ */
 bool kudp_open(kudp_socket *self, const char *address, unsigned short port);
+
+/**
+ * Recieve a datagram.
+ */
 kudp_buffer *kudp_recieve(kudp_socket *self);
+
+/**
+ * Send a datagram to the given address and port.
+ */
 bool kudp_send(kudp_socket *self, const void *data, size_t size, const char *address, unsigned short port);
+
+/**
+ * Return the time that the last recieved packet was passed to the user.
+ */
+double kudp_timestamp(kudp_socket *self);
+
+/**
+ * Close the UDP socket.
+ */
 void kudp_close(kudp_socket *self);
 
 #endif
@@ -97,52 +120,33 @@ bool kudp_open(kudp_socket *self, const char *address, unsigned short port) {
 	
 	snprintf(portstr, sizeof portstr, "%hu", port);
 	
-	// struct addrinfo hints = {
-	// 	.ai_family = AF_UNSPEC,
-	// 	.ai_socktype = SOCK_DGRAM,
-	// 	.ai_protocol = 0,
-	// 	.ai_flags = AI_ADDRCONFIG | AI_NUMERICHOST | AI_NUMERICSERV,
-	// };
-	
-	// struct addrinfo *results = NULL;
-	
-	// if (getaddrinfo(address, portstr, &hints, &results) || !results) {
-	// 	return false;
-	// }
-	
 	struct sockaddr sa;
 	
 	if (!kudp_parseaddr(&sa, address, port)) {
-		// printf("kudp_parseaddr fail\n");
 		return false;
 	}
 	
 	// Open socket
-	// self->fd = socket(results->ai_family, results->ai_socktype, results->ai_protocol);
 	self->fd = socket(sa.sa_family, SOCK_DGRAM, 0);
 	
 	if (self->fd == -1) {
-		// freeaddrinfo(results);
-		// printf("socket fail errno=%s\n", strerror(errno));
 		return false;
 	}
 	
-	// Enable broadcast. This is really stupid IMO
-	// const int broadcast = 1;
-	// setsockopt(self->fd, SOL_SOCKET, SO_BROADCAST, &broadcast, sizeof broadcast);
+	// Enable broadcast, for those who want it
+	const int one = 1;
+	setsockopt(self->fd, SOL_SOCKET, SO_BROADCAST, &one, sizeof one);
+	setsockopt(self->fd, SOL_SOCKET, SO_REUSEADDR, &one, sizeof one);
 	
 	// If address != NULL, this is a server and we should bind to the given
 	// address
 	if (address) {
-		// if (bind(self->fd, results->ai_addr, results->ai_addrlen)) {
 		if (bind(self->fd, &sa, sizeof sa)) {
-			// freeaddrinfo(results);
 			close(self->fd);
 			return false;
 		}
 	}
 	
-	// freeaddrinfo(results);
 	return true;
 }
 
@@ -181,6 +185,20 @@ bool kudp_send(kudp_socket *self, const void *data, size_t size, const char *add
 	ssize_t nsent = sendto(self->fd, data, size, MSG_DONTWAIT, &dest_addr, sizeof dest_addr);
 	
 	return nsent == size;
+}
+
+double kudp_timestamp(kudp_socket *self) {
+	if (self->fd < 0) {
+		return 0.0;
+	}
+	
+	struct timeval result;
+	
+	if (ioctl(self->fd, SIOCGSTAMP, &result)) {
+		return 0.0;
+	}
+	
+	return (double)result.tv_sec + ((double) result.tv_usec) / 1000000000.0;
 }
 
 void kudp_close(kudp_socket *self) {
