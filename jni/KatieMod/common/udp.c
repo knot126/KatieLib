@@ -87,6 +87,18 @@ int knUdpSocketRecieve(lua_State *L) {
 	return 3;
 }
 
+int knUdpSocketTimestamp(lua_State *L) {
+	/**
+	 * udpSocket.timestamp
+	 * 
+	 * The time at which the last packet was processed by the game
+	 */
+	
+	kudp_socket *sckt = lua_touserdata(L, 1);
+	lua_pushnumber(L, kudp_timestamp(sckt));
+	return 1;
+}
+
 int knUdpSocketClose(lua_State *L) {
 	/**
 	 * udpSocket:close()
@@ -121,6 +133,10 @@ int knUdpSocketIndex(lua_State *L) {
 		kudp_socket *sckt = lua_touserdata(L, 1);
 		lua_pushinteger(L, sckt->fd);
 		return 1;
+	}
+	
+	if (!strcmp(key, "timestamp")) {
+		return knUdpSocketTimestamp(L);
 	}
 	
 	lua_pushnil(L);

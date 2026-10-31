@@ -152,17 +152,14 @@ bool kudp_open(kudp_socket *self, const char *address, unsigned short port) {
 
 kudp_buffer *kudp_recieve(kudp_socket *self) {
 	if (self->fd < 0) {
-		// LogW("self->fd < 0");
 		return NULL;
 	}
 	
 	struct sockaddr sa;
 	socklen_t sa_size = sizeof sa;
-	// LogW("recvfrom(%d, self->buffer.data, %d, MSG_DONTWAIT, &sa, &sa_size)", self->fd, KUDP_MAX_SIZE);
 	ssize_t nrecv = recvfrom(self->fd, self->buffer.data, KUDP_MAX_SIZE, MSG_DONTWAIT, &sa, &sa_size);
 	
 	if (nrecv == -1) {
-		// if (errno != EAGAIN) LogW("nrecv == -1, errno=%s", strerror(errno));
 		return NULL;
 	}
 	
